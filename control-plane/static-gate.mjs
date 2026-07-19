@@ -8,6 +8,7 @@ import { evaluateOwnerAuthority } from './owner-authority.mjs';
 import { evaluatePullRequestAttestation } from './pr-attestation.mjs';
 import { classifyMutation } from './risk-classifier.mjs';
 import { scanChangedFiles } from './security-scan.mjs';
+import { checkAttribution } from './attribution-policy.mjs';
 
 const candidateRoot = resolve(process.argv[2] ?? '.');
 const eventPath = process.argv[3] ?? process.env.GITHUB_EVENT_PATH;
@@ -36,6 +37,8 @@ const risk = classifyMutation(changedFiles, policy);
 verifyOwnerAuthority(risk);
 const scan = await scanChangedFiles({ root: candidateRoot, changedEntries, policy });
 findings.push(...scan.findings);
+const attribution = await checkAttribution({ root: candidateRoot, changedFiles, policy });
+findings.push(...attribution.findings);
 
 const ownerLogin = normalizeIdentity(policy.rule_authority?.sole_authority_github_login ?? '');
 const isOwner = ownerLogin !== '' && normalizeIdentity(author) === ownerLogin && normalizeIdentity(actor) === ownerLogin;

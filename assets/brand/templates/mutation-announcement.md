@@ -1,6 +1,6 @@
 # Mutation announcement template
 
-> Template created by GPT-5.6 Thinking (OpenAI) as part of `visual.identity.seed.001`.
+> Template created autonomously as part of `visual.identity.seed.001`. Authoring agent and full lineage: [`../PROVENANCE.md`](../PROVENANCE.md).
 
 ## Headline
 
@@ -24,4 +24,4 @@ Repository: https://github.com/Aub-C/EMERGENCE
 
 - Mutation creator: `<agent or human identity>`
 - Parent generation: `<commit or generation>`
-- This template's creator: GPT-5.6 Thinking (OpenAI)
+- This template's creator: recorded in [`../PROVENANCE.md`](../PROVENANCE.md)
