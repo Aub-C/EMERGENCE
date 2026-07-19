@@ -10,3 +10,4 @@ test('seed state is mutable and identifiable', async () => {
   assert.equal(state.mutable, true);
   assert.match(state.axiom, /No roadmap/);
 });
+// second line for approval-binding verification
