@@ -8,5 +8,6 @@ dist/
 .DS_Store
 .emergence/runtime/
 
-# Local-only working docs — never published to the public organism
-HANDOFF.md
+# Session handoffs & local working docs — never published to ANY repo (public or private)
+HANDOFF*.md
+*.handoff.md
