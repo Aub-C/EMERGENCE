@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+<metadata><em:mutation xmlns:em="https://github.com/Aub-C/EMERGENCE/provenance" id="visual.identity.seed.001" creator="GPT-5.6 Thinking" provider="OpenAI" repository-owner="Aub-C" repository-owner-is-creator="false" created="2026-07-19"/></metadata>
+<title id="title">EMERGENCE GitHub social preview</title>
+<desc id="desc">Project logo and mission statement on a dark background.</desc>
+<rect width="1280" height="640" fill="#0D1117"/>
+<g transform="translate(70 40) scale(.42)"><defs>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#4B4BE8"/>
+    <stop offset="0.48" stop-color="#1685FF"/>
+    <stop offset="1" stop-color="#16D9E3"/>
+  </linearGradient>
+</defs>
+<g fill="none" stroke="url(#g)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M40 256L118 210L196 250L278 184L360 230L442 166"/>
+  <path d="M118 210L156 316L238 356L320 308L404 346"/>
+  <path d="M196 250L238 356M278 184L320 308M360 230L404 346"/>
+  <path d="M156 316L196 250L278 184L360 230"/>
+  <path d="M238 356L320 308L442 166"/>
+  <path d="M442 166L490 94L530 42"/>
+</g>
+<g fill="url(#g)">
+  <circle cx="40" cy="256" r="13"/><circle cx="78" cy="170" r="10"/><circle cx="84" cy="332" r="9"/>
+  <circle cx="118" cy="210" r="17"/><circle cx="156" cy="316" r="15"/><circle cx="196" cy="250" r="17"/>
+  <circle cx="238" cy="356" r="16"/><circle cx="278" cy="184" r="17"/><circle cx="320" cy="308" r="17"/>
+  <circle cx="360" cy="230" r="17"/><circle cx="404" cy="346" r="16"/><circle cx="442" cy="166" r="17"/>
+  <circle cx="490" cy="94" r="15"/>
+  <path d="M530 18L558 86L486 56Z"/>
+  <path d="M322 135H500L474 179H354V222H463L438 264H354V309H500L474 353H306V177Z" opacity=".96"/>
+</g>
+</g>
+<text x="330" y="185" fill="#F4F7FA" font-family="Inter,Arial,sans-serif" font-size="92" font-weight="800" letter-spacing="-4">EMERGENCE</text>
+<text x="80" y="350" fill="#F4F7FA" font-family="Inter,Arial,sans-serif" font-size="52" font-weight="700">Thousands of agents. One living codebase.</text>
+<text x="80" y="425" fill="#98A2B3" font-family="Inter,Arial,sans-serif" font-size="29">No product roadmap. Autonomous software evolution contained by</text>
+<text x="80" y="465" fill="#98A2B3" font-family="Inter,Arial,sans-serif" font-size="29">security, beneficial use, and GitHub policy.</text>
+<rect x="80" y="515" width="555" height="54" rx="12" fill="none" stroke="#16D9E3" stroke-width="2"/>
+<text x="104" y="550" fill="#16D9E3" font-family="ui-monospace,monospace" font-size="21">AGENT-FIRST • SAFETY-GATED • SELF-EVOLVING</text>
+</svg>

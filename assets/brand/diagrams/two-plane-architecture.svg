@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="420" viewBox="0 0 1400 420" role="img" aria-labelledby="title desc">
+<metadata id="emergence-provenance"><em:mutation xmlns:em="https://github.com/Aub-C/EMERGENCE/provenance" id="visual.identity.seed.001" creator="GPT-5.6 Thinking" provider="OpenAI" repository-owner="Aub-C" repository-owner-is-creator="false" created="2026-07-19" /></metadata>
+<title id="title">EMERGENCE two-plane architecture</title>
+<desc id="desc">An agent mutation enters the organism, runs in untrusted CI, is evaluated by the external observer, then either rejected or merged into the next generation.</desc>
+<rect width="1400" height="420" rx="28" fill="#07090D"/>
+<defs>
+  <linearGradient id="g" x1="0" x2="1"><stop stop-color="#4B4BE8"/><stop offset=".5" stop-color="#1685FF"/><stop offset="1" stop-color="#16D9E3"/></linearGradient>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#98A2B3"/></marker>
+</defs>
+<text x="70" y="58" fill="#F4F7FA" font-family="Inter,system-ui" font-size="26" font-weight="700">THE EVOLUTION LOOP</text>
+<text x="70" y="88" fill="#98A2B3" font-family="Inter,system-ui" font-size="16">Candidate freedom inside a trusted external safety boundary.</text>
+<g font-family="Inter,system-ui" text-anchor="middle">
+  <g><rect x="60" y="145" width="210" height="112" rx="18" fill="#111720" stroke="#4B4BE8"/><circle cx="165" cy="174" r="10" fill="#4B4BE8"/><text x="165" y="215" fill="#F4F7FA" font-size="20" font-weight="700">MUTATION</text><text x="165" y="238" fill="#98A2B3" font-size="14">agent or human PR</text></g>
+  <g><rect x="340" y="145" width="210" height="112" rx="18" fill="#111720" stroke="#1685FF"/><circle cx="445" cy="174" r="10" fill="#1685FF"/><text x="445" y="215" fill="#F4F7FA" font-size="20" font-weight="700">ORGANISM</text><text x="445" y="238" fill="#98A2B3" font-size="14">mutable public code</text></g>
+  <g><rect x="620" y="125" width="250" height="152" rx="22" fill="#111720" stroke="#16D9E3" stroke-width="2"/><circle cx="745" cy="160" r="11" fill="#16D9E3"/><text x="745" y="208" fill="#F4F7FA" font-size="22" font-weight="800">OBSERVER</text><text x="745" y="232" fill="#98A2B3" font-size="14">isolated security + viability gate</text><text x="745" y="254" fill="#7DFFB3" font-size="13">trusted external plane</text></g>
+  <g><rect x="940" y="145" width="180" height="112" rx="18" fill="#111720" stroke="#7DFFB3"/><circle cx="1030" cy="174" r="10" fill="#7DFFB3"/><text x="1030" y="215" fill="#F4F7FA" font-size="20" font-weight="700">MERGE</text><text x="1030" y="238" fill="#98A2B3" font-size="14">all checks green</text></g>
+  <g><rect x="1190" y="145" width="160" height="112" rx="18" fill="#111720" stroke="#00C7B7"/><circle cx="1270" cy="174" r="10" fill="#00C7B7"/><text x="1270" y="215" fill="#F4F7FA" font-size="20" font-weight="700">NEXT</text><text x="1270" y="238" fill="#98A2B3" font-size="14">generation</text></g>
+</g>
+<g stroke="#98A2B3" stroke-width="3" fill="none" marker-end="url(#arrow)">
+  <path d="M270 201 H332"/><path d="M550 201 H612"/><path d="M870 201 H932"/><path d="M1120 201 H1182"/>
+</g>
+<path d="M745 284 C745 350 240 360 165 272" fill="none" stroke="#FF5C70" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow)"/>
+<text x="520" y="352" fill="#FF5C70" font-family="Inter,system-ui" font-size="14">reject • contain • record • repair</text>
+</svg>
