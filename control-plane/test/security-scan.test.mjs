@@ -65,6 +65,80 @@ test('valid png signature is allowed as a static asset', async () => {
   assert.equal(result.accepted, true);
 });
 
+test('checksum manifest is read as text rather than an unknown binary', async () => {
+  const result = await scan(
+    'assets/brand/asset-checksums.sha256',
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  logo.svg\n'
+  );
+  assert.equal(result.accepted, true);
+  assert.ok(!result.findings.some((finding) => finding.rule === 'unexpected-binary'));
+});
+
+test('clean vector asset passes without a markup finding', async () => {
+  const result = await scan(
+    'assets/brand/logo.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+    '<title>mark</title><circle cx="32" cy="32" r="30" fill="#101418"/>' +
+    '<path d="M12 32h40" stroke="#e7c8a0" stroke-width="4"/></svg>\n'
+  );
+  assert.equal(result.accepted, true);
+  assert.deepEqual(result.findings.filter((finding) => finding.phase === 'static-security'), []);
+});
+
+test('vector asset carrying a script element is blocked', async () => {
+  const result = await scan(
+    'assets/brand/evil.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg"><' + 'script>fetch("https://invalid.example")</' + 'script></svg>\n'
+  );
+  assert.equal(result.accepted, false);
+  assert.ok(result.findings.some((finding) => finding.rule === 'markup-script-element'));
+});
+
+test('vector asset carrying an inline event handler is blocked', async () => {
+  const result = await scan(
+    'assets/brand/evil.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg" on' + 'load="alert(1)"><circle r="4"/></svg>\n'
+  );
+  assert.equal(result.accepted, false);
+  assert.ok(result.findings.some((finding) => finding.rule === 'markup-event-handler'));
+});
+
+test('vector asset embedding foreign content is blocked', async () => {
+  const result = await scan(
+    'assets/brand/evil.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg"><foreign' + 'Object><body/></foreign' + 'Object></svg>\n'
+  );
+  assert.equal(result.accepted, false);
+  assert.ok(result.findings.some((finding) => finding.rule === 'markup-foreign-object'));
+});
+
+test('vector asset using a script uri is blocked', async () => {
+  const result = await scan(
+    'assets/brand/evil.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg"><a href="java' + 'script:alert(1)"><circle r="4"/></a></svg>\n'
+  );
+  assert.equal(result.accepted, false);
+  assert.ok(result.findings.some((finding) => finding.rule === 'markup-script-uri'));
+});
+
+test('vector asset pulling a remote reference is blocked', async () => {
+  const result = await scan(
+    'assets/brand/evil.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg"><use xlink:' + 'href="https://invalid.example/x.svg#y"/></svg>\n'
+  );
+  assert.equal(result.accepted, false);
+  assert.ok(result.findings.some((finding) => finding.rule === 'markup-remote-reference'));
+});
+
+test('markup rules do not reach documentation code samples', async () => {
+  const result = await scan(
+    'docs/EXAMPLE.md',
+    'Embedding is not permitted:\n\n```html\n<' + 'script>alert(1)</' + 'script>\n```\n'
+  );
+  assert.equal(result.accepted, true);
+  assert.ok(!result.findings.some((finding) => String(finding.rule).startsWith('markup-')));
+});
+
 test('symbolic link is blocked', async () => {
   const root = await mkdtemp(join(tmpdir(), 'emergence-scan-'));
   await writeFile(join(root, 'target.txt'), 'safe');

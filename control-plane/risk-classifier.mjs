@@ -7,8 +7,16 @@ const EXECUTABLE_EXTENSIONS = new Set([
   '.kt', '.kts', '.c', '.cc', '.cpp', '.cxx', '.h', '.hpp', '.cs', '.swift', '.lua'
 ]);
 
+// Recognised static assets and inert data. `.svg` is scriptable, so it is only
+// safe to call low risk because security-scan.mjs hard-fails markup carrying
+// active content. Keep the two in step: never add a scriptable format here
+// without a matching content rule there. `.html` is deliberately absent —
+// scripting is its purpose, so it stays unclassified and earns adversarial
+// review. Dependency manifests and owner-only paths are classified before this
+// set is consulted, so a `.json` lock file or policy file is unaffected.
 const LOW_RISK_EXTENSIONS = new Set([
-  '.md', '.txt', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico'
+  '.md', '.txt', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico',
+  '.svg', '.json', '.jsonl', '.ndjson', '.csv', '.sha256', '.sha512'
 ]);
 
 export function classifyMutation(changedFiles, policy) {

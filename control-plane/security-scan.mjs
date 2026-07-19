@@ -6,8 +6,26 @@ const TEXT_EXTENSIONS = new Set([
   '.js', '.mjs', '.cjs', '.jsx', '.ts', '.tsx', '.css', '.scss', '.html', '.svg', '.xml', '.csv',
   '.py', '.rb', '.php', '.pl', '.sh', '.bash', '.zsh', '.fish', '.ps1', '.bat', '.cmd', '.go', '.rs',
   '.java', '.kt', '.kts', '.c', '.cc', '.cpp', '.cxx', '.h', '.hpp', '.cs', '.swift', '.lua', '.sql',
-  '.gitignore', '.dockerignore', '.editorconfig'
+  '.gitignore', '.dockerignore', '.editorconfig', '.sha256', '.sha512'
 ]);
+
+// Formats a browser will render as a document. They are plain text, so the
+// reader above accepts them, but they can carry executable content — which the
+// shell-oriented rules below do not look for. These rules are the compensating
+// control that lets risk-classifier.mjs treat `.svg` as a low-risk static
+// asset. They are scoped to render targets so that a `<script>` inside a
+// Markdown code sample or a source file is not mistaken for an active payload.
+const MARKUP_EXTENSIONS = new Set(['.svg', '.html', '.htm']);
+
+const MARKUP_RULES = [
+  { id: 'markup-script-element', severity: 'hard-fail', regex: /<\s*script\b/i },
+  { id: 'markup-foreign-object', severity: 'hard-fail', regex: /<\s*foreignObject\b/i },
+  // Anchored inside a tag so element text content cannot trigger it.
+  { id: 'markup-event-handler', severity: 'hard-fail', regex: /<[^>]+\son[a-z]{2,}\s*=/i },
+  { id: 'markup-script-uri', severity: 'hard-fail', regex: /\bjavascript\s*:/i },
+  // `href` only — a namespace declaration such as xmlns="http://…" is not a fetch.
+  { id: 'markup-remote-reference', severity: 'hard-fail', regex: /\bhref\s*=\s*["']\s*(?:https?:)?\/\//i }
+];
 
 const SOURCE_EXTENSIONS = new Set([
   '.js', '.mjs', '.cjs', '.jsx', '.ts', '.tsx', '.py', '.rb', '.php', '.pl', '.sh', '.bash', '.zsh',
@@ -105,6 +123,12 @@ export async function scanChangedFiles({ root, changedFiles, changedEntries, pol
 
     for (const pattern of policy.blocked_patterns ?? []) {
       if (new RegExp(pattern).test(content)) findings.push(fail(relative, 'secret-pattern', `matched protected secret pattern: ${pattern}`));
+    }
+
+    if (MARKUP_EXTENSIONS.has(extension)) {
+      for (const rule of MARKUP_RULES) {
+        if (rule.regex.test(content)) findings.push({ level: rule.severity, phase: 'static-security', file: relative, rule: rule.id, message: 'markup asset carries active content' });
+      }
     }
 
     if (SOURCE_EXTENSIONS.has(extension) || relative.startsWith('.github/')) {
