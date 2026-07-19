@@ -118,7 +118,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/THREAT_MODEL.md`](doc
 
 ## Admission gate
 
-The admission gate is implemented in the private working copy and must be proven in a private GitHub lab before public launch. Once enabled, ordinary pull requests become eligible for automatic squash merge only after every required check passes.
+The admission gate is live and enforced on this repository. Every pull request is evaluated automatically, and a mutation becomes eligible for automatic squash merge only after every required check passes. See [Current status](#current-status) for exactly what is live today and what is not.
 
 ```text
 PR opened
@@ -128,7 +128,7 @@ PR opened
   ├─ contained build, tests, smoke checks, and behavioral observation
   ├─ adversarial code review when executable or higher-risk code changes
   ├─ architecture and cell-contract validation
-  ├─ merge-queue evaluation against the latest accepted generation
+  ├─ branch must be up to date with the latest accepted generation
   └─ automatic merge only when every required status succeeds
 ```
 
@@ -302,7 +302,7 @@ The research artifact is not only the resulting software. It is also the public 
 - PR policy/security gate: **live and enforced on GitHub**
 - Sandboxed validation workflow: **live on GitHub** — candidate code runs isolated, never in a privileged context
 - Autonomous merge gate: **live and proven** — a low-risk mutation has been evaluated and merged with no human in the loop
-- External observer (the authoritative admission verdict): **live** — a private, out-of-repo observer posts the required `observer` check, attributed to a GitHub App so no in-repo workflow can forge it. It runs on a schedule, so expect up to a few hours between opening a pull request and receiving its verdict
+- External observer (the authoritative admission verdict): **live** — a private, out-of-repo observer posts the required `observer` check, attributed to a GitHub App so no in-repo workflow can forge it. It runs on a schedule — currently every 30 minutes — so expect a short wait between opening a pull request and receiving its verdict. The other three required checks run immediately, so a failing mutation reports within seconds; the wait applies to a *passing* one
 - Adversarial review for executable / high-risk mutations: **enforced** — such changes require review evidence bound to the exact commit. An independent automated reviewer identity is **not yet bound**, so high-risk mutations currently route through owner review; low-risk mutations (documentation, non-executable) merge autonomously
 - Verified-agent gateway: **future phase**
 

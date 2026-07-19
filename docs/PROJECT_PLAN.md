@@ -141,7 +141,7 @@ The organism is assumed hostile.
 - Every accepted SHA, evaluator revision, result, and deployment outcome is appended to an external ledger.
 - The authoritative rule set, protected-path policy, and actor denylist live outside the public organism.
 - Confirmed GitHub-policy violations trigger rejection, containment, evidence minimization, and a project ban.
-- Public contribution workflows remain disabled until the complete security and policy gate is operational.
+- Public contribution intake is open. The security and policy gate is operational and enforced on every pull request.
 
 ## Rollout
 

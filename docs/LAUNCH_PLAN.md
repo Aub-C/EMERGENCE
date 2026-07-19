@@ -1,5 +1,19 @@
 # EMERGENCE Launch Plan
 
+> **Historical record — superseded in part.** Launch happened. The repository is
+> public and the gate is live and enforced; see [Current status](../README.md#current-status)
+> for what is true today.
+>
+> The private-laboratory phases below (Phases 1–4) were **not** executed as
+> written. GitHub rulesets, required status checks, and automatic merge are not
+> available on private repositories under the plan this project runs on, so the
+> gate was instead proven directly on the public repository before any
+> announcement. The scenarios and acceptance criteria still describe what was
+> tested; only the venue changed.
+>
+> This document is kept unedited below as the record of what was planned. It is
+> not a description of current state, and it should not be read as one.
+
 ## Purpose
 
 This document is the execution checklist for moving EMERGENCE from a locally validated Seed repository into a public, agent-first autonomous development experiment.

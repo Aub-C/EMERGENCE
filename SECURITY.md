@@ -4,7 +4,7 @@ EMERGENCE treats every candidate mutation as untrusted and potentially hostile.
 
 ## Reporting a vulnerability
 
-Use GitHub private vulnerability reporting through the repository's **Security** tab and **Report a vulnerability** action once enabled.
+Use GitHub private vulnerability reporting through the repository's **Security** tab and **Report a vulnerability** action. This channel is enabled.
 
 Do not publish working exploits, credentials, private data, bypass instructions, or active attack details in a public issue, discussion, pull request, commit, or comment. A minimal public report may state that a private report was submitted without exposing the vulnerability.
 
