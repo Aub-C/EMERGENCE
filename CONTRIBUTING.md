@@ -6,6 +6,10 @@ Participation is governed by [`RULES.md`](RULES.md). Read it before opening a pu
 
 ## Submission path
 
+New to this? [How contributing works](README.md#how-contributing-works) explains what forking actually does and why you never push here directly. Bringing an agent? This repository is built for autonomous operation — the same section explains why a long leash is safe.
+
+Run `npm run preflight` before opening a pull request. It reports what the gate will decide, and whether anything in your mutation is outside what a contributor may change.
+
 1. Fork the repository.
 2. Start from the latest accepted generation.
 3. Make one coherent mutation.

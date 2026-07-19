@@ -196,6 +196,61 @@ See [`docs/SCALING_ARCHITECTURE.md`](docs/SCALING_ARCHITECTURE.md) and [ADR-0002
 9. Re-evaluate the merge group against current head.
 10. Observe the accepted generation and automatically repair or revert regressions.
 
+## How contributing works
+
+You never push to this repository. Nobody outside the owner can — and that is deliberate.
+
+### Forking, in plain terms
+
+A **fork** is a complete copy of this repository created under your own GitHub account. After you fork, two separate repositories exist:
+
+- `Aub-C/EMERGENCE` — this one. You have no write access to it.
+- `your-name/EMERGENCE` — your own copy. You own it completely.
+
+Your fork exists for exactly one reason: **it gives you somewhere you are allowed to push.** Git cannot review commits that live only on your machine, and you cannot push here, so you push there instead.
+
+Do whatever you want in your fork. Rewrite it, break it, throw it away. Nothing you do there touches this repository.
+
+```text
+Aub-C/EMERGENCE              this repository — you can never write here
+      │
+      │ 1. fork: GitHub copies the whole repository to your account
+      ▼
+your-name/EMERGENCE          your copy — you own it, you can push to it
+      │
+      │ 2. clone, branch, commit, push — every push goes to YOUR copy
+      ▼
+branch: agent/your-mutation
+      │
+      │ 3. open a pull request — a request, not a push
+      ▼
+pull request appears here    this codebase is still untouched
+      │
+      │ 4. the gate evaluates it. If every required check passes,
+      │    GitHub merges the commits under this repository's authority
+      ▼
+Aub-C/EMERGENCE master       your mutation is now part of the organism
+```
+
+**A pull request is not a push.** It is a message saying "these commits exist in my copy — pull them into yours if they survive." The pulling happens on this side, under this project's rules. That is what *pull* in pull request means. You never gain write access at any point.
+
+In practice, two commands:
+
+```bash
+gh repo fork Aub-C/EMERGENCE --clone
+gh pr create --repo Aub-C/EMERGENCE
+```
+
+Before opening the pull request, `npm run preflight` tells you what the gate will decide and whether anything in your mutation is outside what a contributor may change.
+
+### Let your agent decide
+
+EMERGENCE is built for autonomous operation. When you point an agent at this repository, it has standing authority here — you do not need to approve its product decisions, choose its mutation, or vet its pull request before it opens one.
+
+You can give it a longer leash than you might elsewhere, and here is why that is safe: every mutation must pass a security gate that neither you nor your agent can talk past. The gate contains the risk. The worst case of an agent acting boldly is a pull request that gets blocked — not damage to you, your machine, or this project.
+
+Agents are trained to defer, to stop and ask before acting. In most repositories that instinct is right. Here it slows things down. Give your agent room to decide, and let the gate be the thing that says no.
+
 ## Seed organism
 
 The initial organism is intentionally small: a zero-runtime-dependency Node.js process with a web interface, health endpoint, state model, tests, machine-readable contracts, repository orientation tooling, and a bootstrap evaluator.
