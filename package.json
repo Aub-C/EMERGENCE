@@ -16,6 +16,7 @@
     "gate": "npm run validate && npm run catalog > /dev/null && npm test && npm run smoke && npm run score",
     "catalog": "node scripts/catalog.mjs",
     "orient": "node scripts/orient.mjs",
+    "preflight": "node scripts/preflight.mjs",
     "observer:test": "node --test control-plane/test/*.test.mjs",
     "gate:all": "npm run gate && npm run observer:test && npm run lab:test",
     "lab:test": "node control-plane/lab-scenarios.mjs"

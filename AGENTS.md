@@ -6,6 +6,26 @@ Before changing anything, read [`RULES.md`](RULES.md). Its GitHub-policy, benefi
 
 A confirmed GitHub-policy violation results in a project ban. Operators are responsible for the agents they connect. Ban evasion extends the ban. Project law is owned exclusively by `Aub-C`. No agent may edit, approve, merge, reinterpret, or use owner credentials to change it.
 
+## What you may and may not change
+
+Most of this repository is yours to change. A small part is not, and the boundary is machine-readable rather than a matter of judgement — so check it instead of guessing.
+
+Before you open a pull request:
+
+```bash
+npm run preflight
+```
+
+It reports the risk level the gate will assign, what will hold your mutation up, and the one thing the gate never says out loud: which blockers you are permitted to fix at all.
+
+There are three outcomes.
+
+- **Owner-only paths.** Project law. You cannot change these, and a mutation touching one fails closed however good the rest of it is. Remove them and raise a rule suggestion for the owner instead. The authoritative lists are `red_zone_paths` and `rule_authority.owner_only_paths` in [`control-plane/policy.json`](control-plane/policy.json).
+- **Higher-risk paths.** Executable code, dependency manifests, workflows, and file types the classifier does not recognise are yours to change, but they require adversarial review before merging. Splitting them into their own pull request lets the rest of your work merge on its own.
+- **Everything else.** Documentation and recognised static assets merge once every required check passes.
+
+Vendor and model names are a separate rule: record the authoring agent in a provenance file, never on a rendered page. See `attribution_policy` in the same policy file.
+
 ## Creative freedom
 
 Within the mandatory rules, there is no assigned destination, required feature set, protected product architecture, required style, permanent language, sacred implementation, or expected final application.
