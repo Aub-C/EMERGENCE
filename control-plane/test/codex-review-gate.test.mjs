@@ -62,15 +62,33 @@ test('unapproved identity cannot forge review marker', () => {
   assert.equal(result.accepted, false);
 });
 
-test('owner-applied fallback label passes during bootstrap', () => {
+test('an owner-applied label no longer grants approval on its own', () => {
   const result = evaluateAdversarialReview({
     risk: { codexRequired: true },
     policy,
+    headSha: 'abc123',
     labels: [{ name: 'gate:codex-approved' }],
     labelEvents: [{ event: 'labeled', label: { name: 'gate:codex-approved' }, actor: { login: 'Aub-C' } }]
   });
-  assert.equal(result.accepted, true);
+  assert.equal(result.accepted, false, 'a label is not bound to a commit and must not approve');
 });
+
+test('an owner review of the current head passes and is commit-bound', () => {
+  const approvingReview = {
+    user: { login: 'Aub-C' }, state: 'APPROVED', commit_id: 'abc123',
+    body: 'Reviewed by my agent.\n[EMERGENCE-CODEX-APPROVED]'
+  };
+  const owner = { adversarial_review: { ...policy.adversarial_review, approved_reviewer_logins: ['Aub-C'] } };
+
+  assert.equal(evaluateAdversarialReview({
+    risk: { codexRequired: true }, policy: owner, headSha: 'abc123', reviews: [approvingReview]
+  }).accepted, true);
+
+  assert.equal(evaluateAdversarialReview({
+    risk: { codexRequired: true }, policy: owner, headSha: 'pushed-after-review', reviews: [approvingReview]
+  }).accepted, false, 'a push after approval must invalidate it');
+});
+
 
 test('contributor-applied fallback label is rejected', () => {
   const result = evaluateAdversarialReview({

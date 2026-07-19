@@ -1,3 +1,8 @@
+// `labels` and `labelEvents` are still accepted so callers need not change, but
+// they no longer grant approval. A label is attached to a pull request, not to a
+// commit, so an approval expressed as a label survives a push and can be spent
+// on code that was never reviewed. Approval must be commit-bound; a GitHub
+// review is, and GitHub additionally dismisses stale reviews on push.
 export function evaluateAdversarialReview({ risk, reviews = [], labels = [], labelEvents = [], policy, headSha }) {
   if (!risk.codexRequired) {
     return { accepted: true, required: false, reason: 'risk level does not require adversarial model review' };
@@ -6,9 +11,6 @@ export function evaluateAdversarialReview({ risk, reviews = [], labels = [], lab
   const config = policy.adversarial_review ?? {};
   const approvedLogins = new Set((config.approved_reviewer_logins ?? []).map(normalize));
   const marker = String(config.approval_marker ?? '').trim();
-  const acceptedLabels = new Set(config.approval_labels ?? []);
-  const labelMatch = labels.find((label) => acceptedLabels.has(typeof label === 'string' ? label : label?.name));
-
   // A review only counts when it approved the exact commit now at the head of the
   // pull request. Without that binding an agent could get a benign commit approved
   // and then push a malicious one under the same, still-"APPROVED", review.
@@ -31,29 +33,6 @@ export function evaluateAdversarialReview({ risk, reviews = [], labels = [], lab
   }
 
   const staleApproval = reviews.some(isApprovedReviewer);
-
-  const fallbackAuthority = normalize(config.temporary_fallback_authority);
-  const labelName = typeof labelMatch === 'string' ? labelMatch : labelMatch?.name;
-  const lastLabelEvent = labelName
-    ? labelEvents.filter((event) => event?.label?.name === labelName && ['labeled', 'unlabeled'].includes(event?.event)).at(-1)
-    : null;
-  const ownerAppliedActiveLabel = Boolean(
-    labelMatch &&
-    config.allow_maintainer_label_fallback === true &&
-    fallbackAuthority &&
-    lastLabelEvent?.event === 'labeled' &&
-    normalize(lastLabelEvent?.actor?.login) === fallbackAuthority
-  );
-
-  if (ownerAppliedActiveLabel) {
-    return {
-      accepted: true,
-      required: true,
-      reason: 'temporary owner-controlled review label found',
-      label: labelName,
-      actor: lastLabelEvent.actor.login
-    };
-  }
 
   if (staleApproval) {
     return {

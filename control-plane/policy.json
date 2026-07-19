@@ -148,17 +148,15 @@
     "critical": "governance, workflows, observer, security boundary, deployment, or red-zone paths"
   },
   "adversarial_review": {
+    "description": "Approval must be bound to the exact commit reviewed. A GitHub review is; a label is not, because it is attached to the pull request and survives a push. The label path was removed rather than disabled. Approve by submitting a review containing the approval marker; GitHub also dismisses stale reviews on push, so a later commit invalidates it twice over.",
     "required_risk_levels": [
       "high",
       "critical"
     ],
-    "approved_reviewer_logins": [],
-    "approval_marker": "[EMERGENCE-CODEX-APPROVED]",
-    "approval_labels": [
-      "gate:codex-approved"
+    "approved_reviewer_logins": [
+      "Aub-C"
     ],
-    "allow_maintainer_label_fallback": true,
-    "temporary_fallback_authority": "Aub-C",
+    "approval_marker": "[EMERGENCE-CODEX-APPROVED]",
     "fail_closed_when_unconfigured": true
   },
   "required_status_checks": [

@@ -289,7 +289,7 @@ Open `http://localhost:3000`.
 | `npm run lab:test` | Run seven simulated benign and adversarial PR admission scenarios |
 | `npm run gate:all` | Run candidate validation, trusted observer tests, and local lab scenarios |
 
-These local tests are development evidence. The GitHub gate — workflow behavior, branch rules, required checks, the external observer verdict, and automatic merging — is live and enforced on this repository; binding an independent automated reviewer identity for high-risk mutations is the remaining frontier.
+These local tests are development evidence. The GitHub gate — workflow behavior, branch rules, required checks, the external observer verdict, and automatic merging — is live and enforced on this repository. High-risk mutations are reviewed by the owner, or by an agent acting on the owner's behalf, rather than by an automated reviewer bound inside the project.
 
 ## Repository map
 
@@ -358,7 +358,7 @@ The research artifact is not only the resulting software. It is also the public 
 - Sandboxed validation workflow: **live on GitHub** — candidate code runs isolated, never in a privileged context
 - Autonomous merge gate: **live and proven** — a low-risk mutation has been evaluated and merged with no human in the loop
 - External observer (the authoritative admission verdict): **live** — a private, out-of-repo observer posts the required `observer` check, attributed to a GitHub App so no in-repo workflow can forge it. It runs on a schedule — currently every 30 minutes — so expect a short wait between opening a pull request and receiving its verdict. The other three required checks run immediately, so a failing mutation reports within seconds; the wait applies to a *passing* one
-- Adversarial review for executable / high-risk mutations: **enforced** — such changes require review evidence bound to the exact commit. An independent automated reviewer identity is **not yet bound**, so high-risk mutations currently route through owner review; low-risk mutations (documentation, non-executable) merge autonomously
+- Adversarial review for executable / high-risk mutations: **enforced** — such changes require an approving review bound to the exact commit, from an identity on the project's reviewer allowlist. A later push invalidates that approval, both in the gate and in GitHub's own stale-review dismissal. No automated reviewer identity is bound inside the project: high-risk mutations are reviewed by the owner, or by an agent acting on the owner's behalf. Low-risk mutations (documentation, non-executable) merge autonomously with no human involved
 - Verified-agent gateway: **future phase**
 
 The gate weighs your code's safety and beneficial use, never your identity. A confirmed GitHub-policy violation is a project-ban event; owner-authored project law and governance remain owner-only and never auto-merge.
