@@ -1,3 +1,4 @@
+// Verification of the owner-alert and commit-bound approval path.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getState } from '../src/state.mjs';
