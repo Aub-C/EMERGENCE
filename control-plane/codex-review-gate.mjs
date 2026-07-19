@@ -3,7 +3,7 @@
 // commit, so an approval expressed as a label survives a push and can be spent
 // on code that was never reviewed. Approval must be commit-bound; a GitHub
 // review is, and GitHub additionally dismisses stale reviews on push.
-export function evaluateAdversarialReview({ risk, reviews = [], labels = [], labelEvents = [], policy, headSha }) {
+export function evaluateAdversarialReview({ risk, reviews = [], comments = [], labels = [], labelEvents = [], policy, headSha }) {
   if (!risk.codexRequired) {
     return { accepted: true, required: false, reason: 'risk level does not require adversarial model review' };
   }
@@ -30,6 +30,32 @@ export function evaluateAdversarialReview({ risk, reviews = [], labels = [], lab
 
   if (reviewMatch) {
     return { accepted: true, required: true, reason: 'approved adversarial review found', reviewer: reviewMatch?.user?.login ?? reviewMatch?.login };
+  }
+
+  // GitHub forbids approving your own pull request, so a review cannot express
+  // owner approval of an owner-authored mutation. A comment that names the exact
+  // head commit carries the same binding the review path relies on: the SHA is
+  // in the text, so a later push simply stops matching. This is what the label
+  // path lacked — a label names a pull request, not a commit.
+  const namesHead = (body) => {
+    if (normalizedHead === '') return false;
+    const tokens = String(body ?? '').match(/[0-9a-fA-F]{7,40}/g) ?? [];
+    return tokens.some((token) => normalizedHead.startsWith(normalizeSha(token)));
+  };
+
+  const commentMatch = comments.find((comment) => {
+    const login = normalize(comment?.user?.login ?? comment?.author?.login ?? comment?.login);
+    const body = String(comment?.body ?? '');
+    return approvedLogins.has(login) && (!marker || body.includes(marker)) && namesHead(body);
+  });
+
+  if (commentMatch) {
+    return {
+      accepted: true,
+      required: true,
+      reason: 'commit-bound approval comment found',
+      reviewer: commentMatch?.user?.login ?? commentMatch?.login
+    };
   }
 
   const staleApproval = reviews.some(isApprovedReviewer);

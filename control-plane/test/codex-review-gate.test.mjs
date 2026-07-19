@@ -112,3 +112,55 @@ test('removed fallback label is rejected', () => {
   });
   assert.equal(result.accepted, false);
 });
+
+// --- commit-bound approval comment -----------------------------------------
+// GitHub forbids approving your own pull request, so a review cannot express
+// owner approval of an owner-authored mutation. A comment naming the exact head
+// SHA carries the same commit binding: a later push changes the SHA, and the
+// old comment stops matching on its own.
+
+const ownerPolicy = { adversarial_review: { ...policy.adversarial_review, approved_reviewer_logins: ['Aub-C'] } };
+const HEAD = 'a1b2c3d4e5f60718293a4b5c6d7e8f9012345678';
+
+function withComment(body, login = 'Aub-C', headSha = HEAD) {
+  return evaluateAdversarialReview({
+    risk: { codexRequired: true }, policy: ownerPolicy, headSha,
+    comments: [{ user: { login }, body }]
+  });
+}
+
+test('an owner comment naming the head commit approves', () => {
+  const r = withComment(`Reviewed with my agent.\n[EMERGENCE-CODEX-APPROVED] ${HEAD}`);
+  assert.equal(r.accepted, true);
+});
+
+test('an abbreviated head sha is accepted', () => {
+  const r = withComment(`[EMERGENCE-CODEX-APPROVED] ${HEAD.slice(0, 12)}`);
+  assert.equal(r.accepted, true);
+});
+
+test('a comment naming a different commit does not approve', () => {
+  const r = withComment('[EMERGENCE-CODEX-APPROVED] 0000000000000000000000000000000000000000');
+  assert.equal(r.accepted, false, 'approval must not carry to a commit it did not name');
+});
+
+test('a comment with the marker but no commit reference does not approve', () => {
+  const r = withComment('[EMERGENCE-CODEX-APPROVED] looks fine to me');
+  assert.equal(r.accepted, false, 'an unbound approval is what the label path got wrong');
+});
+
+test('a comment naming the head commit without the marker does not approve', () => {
+  const r = withComment(`I looked at ${HEAD} and it seems ok`);
+  assert.equal(r.accepted, false);
+});
+
+test('a contributor cannot approve by imitating the comment', () => {
+  const r = withComment(`[EMERGENCE-CODEX-APPROVED] ${HEAD}`, 'random-contributor');
+  assert.equal(r.accepted, false);
+});
+
+test('an approval comment stops applying once the head moves', () => {
+  const body = `[EMERGENCE-CODEX-APPROVED] ${HEAD}`;
+  assert.equal(withComment(body, 'Aub-C', HEAD).accepted, true);
+  assert.equal(withComment(body, 'Aub-C', 'ffffffffffffffffffffffffffffffffffffffff').accepted, false);
+});

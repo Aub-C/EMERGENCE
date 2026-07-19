@@ -39,6 +39,9 @@ jobs:
           gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
             --slurp > "$RUNNER_TEMP/emergence-reviews-pages.json"
           jq 'add // []' "$RUNNER_TEMP/emergence-reviews-pages.json" > "$RUNNER_TEMP/emergence-reviews.json"
+          gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100" \
+            --slurp > "$RUNNER_TEMP/emergence-comments-pages.json"
+          jq 'add // []' "$RUNNER_TEMP/emergence-comments-pages.json" > "$RUNNER_TEMP/emergence-comments.json"
           gh api "repos/$REPOSITORY/issues/$PR_NUMBER" --jq '.labels' > "$RUNNER_TEMP/emergence-labels.json"
           gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/events?per_page=100" \
             --slurp > "$RUNNER_TEMP/emergence-label-events-pages.json"
@@ -53,4 +56,5 @@ jobs:
             "$RUNNER_TEMP/emergence-changed-files.tsv" \
             "$RUNNER_TEMP/emergence-reviews.json" \
             "$RUNNER_TEMP/emergence-labels.json" \
-            "$RUNNER_TEMP/emergence-label-events.json"
+            "$RUNNER_TEMP/emergence-label-events.json" \
+            "$RUNNER_TEMP/emergence-comments.json"

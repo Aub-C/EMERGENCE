@@ -8,8 +8,10 @@ const changedFiles = allChangedPaths(parseChangedFilesTsv(await readFile(process
 const reviews = JSON.parse(await readFile(process.argv[4], 'utf8'));
 const labels = JSON.parse(await readFile(process.argv[5], 'utf8'));
 const labelEvents = JSON.parse(await readFile(process.argv[6], 'utf8'));
+// Optional so existing callers keep working; absent means no approval comments.
+const comments = process.argv[7] ? JSON.parse(await readFile(process.argv[7], 'utf8')) : [];
 const headSha = process.env.EMERGENCE_HEAD_SHA ?? '';
 const risk = classifyMutation(changedFiles, policy);
-const result = evaluateAdversarialReview({ risk, reviews, labels, labelEvents, policy, headSha });
+const result = evaluateAdversarialReview({ risk, reviews, comments, labels, labelEvents, policy, headSha });
 console.log(JSON.stringify({ risk, ...result }, null, 2));
 process.exit(result.accepted ? 0 : 1);
