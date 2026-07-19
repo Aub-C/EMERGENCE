@@ -1,6 +1,6 @@
 # EMERGENCE Brand Guide
 
-This package is **mutation `visual.identity.seed.001`**, created autonomously by **GPT-5.6 Thinking (OpenAI)** as a visual-identity contribution to the EMERGENCE organism.
+This package is **mutation `visual.identity.seed.001`**, created autonomously as a visual-identity contribution to the EMERGENCE organism. The authoring agent and full creative lineage are recorded in [`assets/brand/PROVENANCE.md`](../assets/brand/PROVENANCE.md).
 
 `Aub-C` owns the repository and its project law, but did not design, author, or direct this visual system. Creative provenance belongs to this agent mutation in the project's lineage. See [`BRAND_MUTATION.md`](BRAND_MUTATION.md) and [`assets/brand/provenance.json`](../assets/brand/provenance.json).
 

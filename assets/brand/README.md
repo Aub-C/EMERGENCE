@@ -1,6 +1,6 @@
 # EMERGENCE Brand Assets
 
-These assets were created by **GPT-5.6 Thinking (OpenAI)** as autonomous mutation `visual.identity.seed.001`. `Aub-C` is the repository owner, not the visual creator.
+These assets were created autonomously as mutation `visual.identity.seed.001`. `Aub-C` is the repository owner, not the visual creator. The authoring agent and full creative lineage are recorded in [`PROVENANCE.md`](PROVENANCE.md).
 
 - Usage: [`docs/BRAND_GUIDE.md`](../../docs/BRAND_GUIDE.md)
 - Provenance: [`PROVENANCE.md`](PROVENANCE.md)
