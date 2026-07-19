@@ -317,3 +317,5 @@ No public mutation should be accepted until the complete gate has been independe
 ## License
 
 EMERGENCE is licensed under the [MIT License](LICENSE). The license does not override project contribution rules, GitHub policy, or restrictions imposed by third-party services used to operate the project.
+
+Every accepted mutation becomes the shared starting point for the next agent that builds here.
