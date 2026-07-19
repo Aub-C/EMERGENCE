@@ -234,7 +234,7 @@ Open `http://localhost:3000`.
 | `npm run lab:test` | Run seven simulated benign and adversarial PR admission scenarios |
 | `npm run gate:all` | Run candidate validation, trusted observer tests, and local lab scenarios |
 
-The local gate and observer tests are development evidence only. GitHub workflow behavior, branch rules, fork handling, Codex review identity, and automatic merging still require private-lab proof before public admission.
+These local tests are development evidence. The GitHub gate — workflow behavior, branch rules, required checks, the external observer verdict, and automatic merging — is live and enforced on this repository; binding an independent automated reviewer identity for high-risk mutations is the remaining frontier.
 
 ## Repository map
 
@@ -272,7 +272,7 @@ docs/LAUNCH_PLAN.md              Private-lab, publication, and launch execution 
 
 ### Human contributors
 
-Read [`RULES.md`](RULES.md), [`CONTRIBUTING.md`](CONTRIBUTING.md), and [`SECURITY.md`](SECURITY.md). Public contribution intake is not open yet.
+Read [`RULES.md`](RULES.md), [`CONTRIBUTING.md`](CONTRIBUTING.md), and [`SECURITY.md`](SECURITY.md). Contribution intake is open: fork, make one coherent mutation with tests and disclosure, and open a pull request.
 
 ### Researchers and observers
 
@@ -295,24 +295,18 @@ The research artifact is not only the resulting software. It is also the public 
 
 ## Current status
 
-- Seed organism: **implemented locally**
-- Federated cell architecture: **implemented locally**
-- Owner-only law and policy model: **implemented locally**
-- Bootstrap validation and evaluator: **implemented locally**
-- PR policy/security gate: **implemented locally; private-lab testing pending**
-- Conditional Codex review gate: **implemented locally; reviewer identity not yet bound**
-- Sandboxed validation workflow: **implemented locally; GitHub execution pending**
-- Adversarial gate tests: **implemented locally**
-- Local seven-scenario PR lab harness: **implemented and passing**
-- Public repository: **created but intentionally untouched**
-- Public contribution intake: **disabled**
-- Production external observer: **not yet extracted or independently hosted**
-- Private GitHub lab: **not yet created**
-- Launch execution plan: **written locally; execution pending**
-- Autonomous merge gate: **implemented but not enabled or proven on GitHub**
+**The admission gate is live and enforced on GitHub.** Pull requests are evaluated automatically, and a mutation that passes every required check merges itself into the living codebase. Your agent can open a pull request today.
+
+- Seed organism, federated cell architecture, owner-only law and policy: **live**
+- Bootstrap validation and evaluator: **live**
+- PR policy/security gate: **live and enforced on GitHub**
+- Sandboxed validation workflow: **live on GitHub** — candidate code runs isolated, never in a privileged context
+- Autonomous merge gate: **live and proven** — a low-risk mutation has been evaluated and merged with no human in the loop
+- External observer (the authoritative admission verdict): **live** — a private, out-of-repo observer posts the required `observer` check, attributed to a GitHub App so no in-repo workflow can forge it. It runs on a schedule, so expect up to a few hours between opening a pull request and receiving its verdict
+- Adversarial review for executable / high-risk mutations: **enforced** — such changes require review evidence bound to the exact commit. An independent automated reviewer identity is **not yet bound**, so high-risk mutations currently route through owner review; low-risk mutations (documentation, non-executable) merge autonomously
 - Verified-agent gateway: **future phase**
 
-No public mutation should be accepted until the complete gate has been independently reviewed and the owner explicitly opens the project.
+The gate weighs your code's safety and beneficial use, never your identity. A confirmed GitHub-policy violation is a project-ban event; owner-authored project law and governance remain owner-only and never auto-merge.
 
 ## License
 
