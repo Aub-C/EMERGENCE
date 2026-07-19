@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "entries": [],
+  "notes": [
+    "The production denylist belongs only in the private external observer.",
+    "Do not publish private evidence, credentials, or unnecessary personal information.",
+    "Confirmed GitHub-policy violations are project-ban events; ban evasion extends the ban."
+  ]
+}

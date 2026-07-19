@@ -1,0 +1,167 @@
+{
+  "protocol_version": 5,
+  "policy_name": "EMERGENCE mandatory security and GitHub compliance policy",
+  "policy_mirror": {
+    "path": "RULES.md",
+    "sha256": "3319de6ab283a92267248482e2f180131ac6312b500524b3dcbe3f041a124361",
+    "change_class": "red-zone-owner-approval-only"
+  },
+  "required_files": [
+    "RULES.md",
+    "AGENTS.md",
+    "START_HERE.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    ".emergence/candidate.json",
+    "docs/OWNER_AUTHORITY.md",
+    ".github/CODEOWNERS"
+  ],
+  "github_policy_sources": [
+    "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+    "https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies",
+    "https://docs.github.com/en/site-policy/acceptable-use-policies/github-active-malware-or-exploits",
+    "https://docs.github.com/en/site-policy/acceptable-use-policies/github-disrupting-the-experience-of-other-users",
+    "https://docs.github.com/en/site-policy/acceptable-use-policies/github-synthetic-media-and-ai-tools",
+    "https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features"
+  ],
+  "limits": {
+    "command_timeout_ms": 120000,
+    "startup_timeout_ms_max": 120000,
+    "max_repository_bytes": 104857600,
+    "max_single_file_bytes": 10485760,
+    "max_changed_bytes": 26214400
+  },
+  "blocked_patterns": [
+    "-----BEGIN PRIVATE KEY-----",
+    "AKIA[0-9A-Z]{16}",
+    "ghp_[A-Za-z0-9]{20,}",
+    "github_pat_[A-Za-z0-9_]{20,}"
+  ],
+  "prohibited_capability_classes": [
+    "active-malware-or-payload-delivery",
+    "unauthorized-access",
+    "credential-or-secret-theft",
+    "phishing",
+    "command-and-control",
+    "denial-of-service",
+    "destructive-operations",
+    "covert-persistence",
+    "sandbox-escape",
+    "harmful-surveillance",
+    "policy-or-gate-bypass",
+    "review-evasion-or-obfuscation",
+    "cryptomining",
+    "unrelated-or-disproportionate-github-compute",
+    "excessive-or-inauthentic-automation",
+    "privacy-or-intellectual-property-violation",
+    "github-prohibited-synthetic-media"
+  ],
+  "red_zone_paths": [
+    "RULES.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    ".github/**",
+    "control-plane/**",
+    "protocol/**",
+    "package.json",
+    "package-lock.json",
+    "Dockerfile",
+    "docs/THREAT_MODEL.md",
+    "docs/BOOTSTRAP.md",
+    "docs/ADMISSION_GATE.md",
+    "docs/LAUNCH_PLAN.md",
+    "docs/PROJECT_MANIFEST.json",
+    "docs/GATE_REDTEAM_LOG.md",
+    "docs/ENFORCEMENT.md",
+    "docs/OWNER_AUTHORITY.md"
+  ],
+  "enforcement": {
+    "confirmed_github_policy_violation": "reject-contain-ban",
+    "ban_scope": [
+      "agent-identity",
+      "github-actor",
+      "automation-credential",
+      "integration",
+      "operator",
+      "materially-linked-identities"
+    ],
+    "ban_evasion": "separate-violation-and-ban-extension",
+    "denylist_path": "denylist.json",
+    "evidence_retention": "minimum-necessary-for-security-and-enforcement",
+    "false_positive_state": "quarantine-pending-review",
+    "escalation": {
+      "ban_threshold": 2,
+      "account_block": "owner-confirmed",
+      "block_identity_fields": ["actor", "operator", "github_actor", "automation_id"],
+      "report_abuse": true,
+      "note": "Warn on the first confirmed ban-eligible bypass attempt; project-denylist on a repeat after warning. account_block is 'owner-confirmed' (a one-tap owner action) or 'automatic'. Strike state and the block/report token live only in the external observer. See docs/ENFORCEMENT.md."
+    }
+  },
+  "note": "Creative direction is open. GitHub policy, beneficial use, protected law, owner-only rule authority, and security containment are mandatory.",
+  "rule_authority": {
+    "sole_authority_github_login": "Aub-C",
+    "authority_type": "personal-non-delegable",
+    "agents_may_change_rules": false,
+    "automation_may_approve_or_merge_rule_changes": false,
+    "suggestions_allowed_via": [
+      "issue",
+      "discussion"
+    ],
+    "owner_only_paths": [
+      "RULES.md",
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "SECURITY.md",
+      ".github/CODEOWNERS",
+      "control-plane/policy.json",
+      "control-plane/denylist.json",
+      "docs/OWNER_AUTHORITY.md"
+    ],
+    "required_publication_mode": "owner-personal-manual-merge",
+    "unauthorized_change_result": "hard-fail"
+  },
+  "static_scan": {
+    "allowed_binary_extensions": [
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".webp",
+      ".ico"
+    ],
+    "reject_symbolic_links": true,
+    "scan_changed_files_only": true,
+    "unknown_binary_result": "hard-fail",
+    "signature_definition_paths": [
+      "control-plane/**"
+    ]
+  },
+  "risk_classification": {
+    "low": "documentation and recognized static assets only",
+    "high": "executable source, dependencies, or unclassified formats",
+    "critical": "governance, workflows, observer, security boundary, deployment, or red-zone paths"
+  },
+  "adversarial_review": {
+    "required_risk_levels": [
+      "high",
+      "critical"
+    ],
+    "approved_reviewer_logins": [],
+    "approval_marker": "[EMERGENCE-CODEX-APPROVED]",
+    "approval_labels": [
+      "gate:codex-approved"
+    ],
+    "allow_maintainer_label_fallback": true,
+    "temporary_fallback_authority": "Aub-C",
+    "fail_closed_when_unconfigured": true
+  },
+  "required_status_checks": [
+    "emergence / policy-security",
+    "emergence / validation",
+    "emergence / codex-review",
+    "Dependency review / Dependency review",
+    "CodeQL / CodeQL (javascript-typescript)",
+    "CodeQL / CodeQL (actions)"
+  ]
+}

@@ -1,0 +1,78 @@
+name: arm-auto-merge
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
+
+permissions:
+  # contents: write is required by the enablePullRequestAutoMerge GraphQL
+  # mutation (arming auto-merge writes a future merge to the base branch).
+  # This workflow runs ONLY trusted base-branch code — the candidate is never
+  # checked out or executed here — so the elevated token never meets PR code.
+  contents: write
+  pull-requests: write
+
+# Serialize arm/disarm per PR so a label storm or rapid pushes cannot interleave
+# an old arming decision after a newer refusal.
+concurrency:
+  group: arm-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  arm:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check out trusted merge policy
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Fetch changed-file inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" \
+            --jq '.[] | [.filename, .status, (.previous_filename // "")] | @tsv' > "$RUNNER_TEMP/emergence-changed-files.tsv"
+
+      - name: Classify merge eligibility
+        id: risk
+        run: |
+          node trusted/control-plane/risk-cli.mjs \
+            trusted/control-plane/policy.json \
+            "$RUNNER_TEMP/emergence-changed-files.tsv"
+
+      - name: Disarm automatic merge for critical changes
+        if: steps.risk.outputs.auto_merge_allowed != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          # A PR armed while green can later receive a red-zone commit; arming
+          # persists across pushes, so an explicit disarm is required to keep
+          # "red-zone changes never auto-merge" true for the PR's whole lifetime.
+          # A disarm failure fails this job loudly — silently staying armed is
+          # the one outcome this step exists to prevent.
+          armed=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.auto_merge != null')
+          if [ "$armed" = "true" ]; then
+            gh pr merge --disable-auto "$PR_URL"
+            echo "auto-merge disarmed: mutation is no longer eligible"
+          else
+            echo "auto-merge not armed; nothing to disarm"
+          fi
+          echo "Critical governance or red-zone mutations require Aub-C and manual merge."
+
+      - name: Arm automatic squash merge
+        if: steps.risk.outputs.auto_merge_allowed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"

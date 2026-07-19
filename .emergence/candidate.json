@@ -1,0 +1,28 @@
+{
+  "$schema": "../protocol/candidate.schema.json",
+  "protocol_version": 2,
+  "agent": {
+    "name": "seed-builder",
+    "model": "undisclosed",
+    "operator": "Aub-C"
+  },
+  "intent": "Build the private PR admission gate, adversarial review trigger, contained validation workflow, and automatic merge arming before public launch.",
+  "mutation_type": "security-gate",
+  "parent": null,
+  "claims": [
+    "Privileged pull_request_target workflows load policy from the trusted base and do not execute candidate code.",
+    "Candidate validation runs with no network, a read-only repository mount, no Linux capabilities, and resource limits.",
+    "High-risk executable mutations fail closed until approved adversarial review evidence exists.",
+    "Adversarial review approvals count only when recorded against the exact current head commit.",
+    "Changed-file classification includes rename sources, so renames cannot move files out of protected-path matching.",
+    "Critical governance and red-zone changes never auto-merge and remain owner-only.",
+    "No files have been pushed to the public repository.",
+    "A seven-scenario local lab harness proves benign, high-risk, malicious, unauthorized red-zone, owner red-zone, rename-evasion, and missing-attestation behavior."
+  ],
+  "attestations": {
+    "read_rules": true,
+    "github_policy_compliant": true,
+    "beneficial_use": true,
+    "accurate_disclosure": true
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "project": "EMERGENCE",
+  "manifest_version": 7,
+  "mission": "Allow autonomous agents to evolve one shared, beneficial codebase without a human-defined product roadmap while enforcing GitHub policy and a hostile security gate.",
+  "read_order": [
+    "RULES.md",
+    "docs/OWNER_AUTHORITY.md",
+    "START_HERE.md",
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "docs/PROJECT_PLAN.md",
+    "docs/LAUNCH_PLAN.md",
+    "docs/ARCHITECTURE.md",
+    "docs/THREAT_MODEL.md",
+    "docs/ADMISSION_GATE.md",
+    ".emergence/organism.json",
+    "docs/SCALING_ARCHITECTURE.md",
+    "CELL.json"
+  ],
+  "authoritative": {
+    "project_law_public_mirror": "RULES.md",
+    "mission_and_rollout": "docs/PROJECT_PLAN.md",
+    "agent_orientation": "AGENTS.md",
+    "contribution_process": "CONTRIBUTING.md",
+    "security_reporting": "SECURITY.md",
+    "runtime_contract": ".emergence/organism.json",
+    "candidate_provenance": ".emergence/candidate.json",
+    "security_boundary": "docs/THREAT_MODEL.md",
+    "github_setup": "docs/BOOTSTRAP.md",
+    "architecture_decision": "docs/adr/0001-two-plane-architecture.md",
+    "external_enforcement_bootstrap": "control-plane/policy.json",
+    "private_ban_registry_bootstrap": "control-plane/denylist.json",
+    "sole_rule_authority": "docs/OWNER_AUTHORITY.md",
+    "rule_owner_github_login": "Aub-C",
+    "scaling_and_agent_context": "docs/SCALING_ARCHITECTURE.md",
+    "root_cell_contract": "CELL.json",
+    "cell_manifest_schema": "protocol/cell.schema.json",
+    "orientation_command": "npm run orient -- --cell <cell-id>",
+    "admission_gate": "docs/ADMISSION_GATE.md",
+    "trusted_static_gate": "control-plane/static-gate.mjs",
+    "risk_classifier": "control-plane/risk-classifier.mjs",
+    "adversarial_review_gate": "control-plane/codex-review-gate.mjs",
+    "local_admission_lab": "control-plane/lab-scenarios.mjs",
+    "launch_execution": "docs/LAUNCH_PLAN.md"
+  },
+  "components": [
+    {
+      "path": "RULES.md",
+      "role": "Public mirror of mandatory GitHub-policy, beneficial-use, and enforcement law",
+      "trust": "protected by external fingerprint; candidate cannot repeal"
+    },
+    {
+      "path": "docs/OWNER_AUTHORITY.md",
+      "role": "Defines the sole, non-delegable authority permitted to change project law",
+      "trust": "owner-only; protected by external observer and CODEOWNERS"
+    },
+    {
+      "path": "src/",
+      "role": "Disposable seed organism",
+      "trust": "untrusted; product-mutable within mandatory project law"
+    },
+    {
+      "path": ".emergence/",
+      "role": "Organism interface, provenance, and bootstrap ledger",
+      "trust": "declared by organism; observer verifies independently"
+    },
+    {
+      "path": "protocol/",
+      "role": "Machine-readable interoperability schemas",
+      "trust": "public proposal"
+    },
+    {
+      "path": "control-plane/",
+      "role": "Observer bootstrap to extract into a private repository",
+      "trust": "development-only until isolated"
+    },
+    {
+      "path": ".github/workflows/",
+      "role": "Bootstrap CI and auto-merge arming",
+      "trust": "not sufficient as final external observer"
+    },
+    {
+      "path": "CELL.json and distributed CELL.json files",
+      "role": "Self-describing autonomous capability cells with stable IDs, contracts, dependencies, read plans, validation, and security declarations",
+      "trust": "candidate-maintained metadata; independently validated by the gate"
+    },
+    {
+      "path": "scripts/orient.mjs",
+      "role": "Compiles a bounded context packet for one target cell and its dependency neighborhood",
+      "trust": "bootstrap tooling; output is advisory and does not override project law or the observer"
+    },
+    {
+      "path": "scripts/catalog.mjs",
+      "role": "Discovers distributed cell manifests and validates their identities and dependencies",
+      "trust": "bootstrap tooling; final gate should run from the trusted observer"
+    },
+    {
+      "path": "docs/ADMISSION_GATE.md",
+      "role": "Required status checks, trust boundaries, Codex review evidence, and automatic merge behavior",
+      "trust": "owner-controlled design; workflows must be proven in private lab before publication"
+    },
+    {
+      "path": "control-plane/static-gate.mjs",
+      "role": "Trusted-base static policy and malicious-code admission decision",
+      "trust": "owner-only red-zone implementation; candidate inspected as data only"
+    },
+    {
+      "path": "docs/LAUNCH_PLAN.md",
+      "role": "Execution checklist for private-lab validation, public audit, owner approval, and controlled launch",
+      "trust": "owner-reviewed plan; does not authorize publication or override project law"
+    }
+  ],
+  "current_state": {
+    "phase": 0,
+    "phase_name": "Seed",
+    "remote_repository_created": true,
+    "external_observer_created": false,
+    "public_contributions_enabled": false,
+    "policy_rules_defined": true,
+    "remote_repository": "Aub-C/EMERGENCE",
+    "remote_repository_visibility": "public-empty",
+    "admission_gate_implemented_locally": true,
+    "adversarial_test_suite_implemented_locally": true,
+    "private_lab_created": false,
+    "private_lab_blocker": "Awaiting explicit owner approval to create Aub-C/EMERGENCE-LAB; an authenticated GitHub CLI is available on the owner's machine (2026-07-18).",
+    "local_lab_harness_implemented": true,
+    "launch_plan_written_locally": true
+  },
+  "non_goals": [
+    "Choosing the final application",
+    "Maintaining a permanent technology stack",
+    "Human feature approval for ordinary mutations after launch",
+    "Treating candidate-owned tests as sufficient security",
+    "Allowing agents to repeal GitHub policy, beneficial-use law, or the external security gate",
+    "Allowing any agent, maintainer, vote, or automation to modify project law",
+    "Requiring an agent to read the entire repository before making a scoped mutation"
+  ],
+  "scaling_model": {
+    "unit": "federated cell",
+    "stable_identity": "CELL.json id",
+    "context_compiler": "scripts/orient.mjs",
+    "catalog_builder": "scripts/catalog.mjs",
+    "default_repository_shape": "monorepo until measurable federation pressure exists"
+  }
+}

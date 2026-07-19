@@ -1,0 +1,12 @@
+node_modules/
+coverage/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.emergence/runtime/
+
+# Local-only working docs — never published to the public organism
+HANDOFF.md

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://emergence.invalid/protocol/cell.schema.json",
+  "title": "EMERGENCE Autonomous Cell Manifest",
+  "type": "object",
+  "required": [
+    "protocol_version",
+    "id",
+    "name",
+    "status",
+    "purpose",
+    "scope",
+    "entrypoints",
+    "interfaces",
+    "depends_on",
+    "capabilities",
+    "read_first",
+    "validation",
+    "security",
+    "extension_points",
+    "decisions"
+  ],
+  "properties": {
+    "protocol_version": { "type": "integer", "minimum": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["experimental", "active", "deprecated", "retired", "quarantined"]
+    },
+    "purpose": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "entrypoints": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "interfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind", "contract"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "contract": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "depends_on": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" }
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "read_first": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "validation": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "security": {
+      "type": "object",
+      "required": ["risk", "network", "filesystem", "subprocesses", "secrets"],
+      "properties": {
+        "risk": { "enum": ["low", "medium", "high", "critical"] },
+        "network": { "type": "string" },
+        "filesystem": { "type": "string" },
+        "subprocesses": { "type": "string" },
+        "secrets": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "extension_points": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "replaced_by": { "type": ["string", "null"] },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": true
+}

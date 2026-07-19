@@ -1,0 +1,69 @@
+name: emergence
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validation:
+    name: validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Refuse dependency mutations in the automatic execution lane
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/emergence-validation-files.txt"
+          if grep -iE '(^|/)(package(-lock)?\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock|requirements.*\.txt|poetry\.lock|pyproject\.toml|go\.(mod|sum)|cargo\.(toml|lock)|pom\.xml|build\.gradle(\.kts)?)$' "$RUNNER_TEMP/emergence-validation-files.txt"; then
+            echo "Dependency mutations are red-zone and do not run in the automatic candidate lane." >&2
+            exit 1
+          fi
+
+      - name: Pull fixed execution image before mounting candidate
+        # Digest-pinned so a tag repoint cannot swap the execution image (digest of
+        # node:24-bookworm-slim recorded 2026-07-18).
+        run: docker pull node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d
+
+      - name: Install trusted-baseline dependencies without lifecycle scripts
+        run: |
+          mkdir -p "$RUNNER_TEMP/npm-home"
+          env -i HOME="$RUNNER_TEMP/npm-home" PATH="$PATH" CI=true \
+            npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run candidate in a networkless restricted container
+        run: |
+          docker run --rm \
+            --network none \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --pids-limit 256 \
+            --memory 1g \
+            --cpus 2 \
+            --user 65534:65534 \
+            --env HOME=/tmp \
+            --env npm_config_cache=/tmp/npm-cache \
+            --env CI=true \
+            --workdir /workspace \
+            --volume "$GITHUB_WORKSPACE:/workspace:ro" \
+            node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d \
+            npm run gate

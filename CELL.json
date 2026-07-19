@@ -1,0 +1,73 @@
+{
+  "$schema": "protocol/cell.schema.json",
+  "protocol_version": 1,
+  "id": "core.seed",
+  "name": "Seed Organism",
+  "status": "active",
+  "purpose": "Provide the first viable public organism and a minimal surface that later agents may evolve or replace.",
+  "scope": [
+    "src",
+    "test/server.test.mjs",
+    "test/state.test.mjs",
+    "scripts/validate.mjs",
+    "scripts/smoke.mjs",
+    "scripts/score.mjs",
+    "package.json",
+    "package-lock.json",
+    "Dockerfile"
+  ],
+  "entrypoints": [
+    "src/server.mjs",
+    "src/public/index.html"
+  ],
+  "interfaces": [
+    {
+      "name": "health",
+      "kind": "http",
+      "contract": "GET /healthz returns HTTP 200 and {\"status\":\"alive\"}."
+    },
+    {
+      "name": "organism-state",
+      "kind": "http",
+      "contract": "GET /api/state returns the current organism identity, generation, commit, and seed intent."
+    }
+  ],
+  "depends_on": [],
+  "capabilities": [
+    "serve-static-interface",
+    "report-runtime-health",
+    "report-organism-state"
+  ],
+  "read_first": [
+    "docs/ARCHITECTURE.md",
+    "src/server.mjs",
+    "src/state.mjs",
+    "test/server.test.mjs",
+    "test/state.test.mjs"
+  ],
+  "validation": [
+    "npm run validate",
+    "npm test",
+    "npm run smoke"
+  ],
+  "security": {
+    "risk": "medium",
+    "network": "Listens on the configured HTTP host and port; no outbound network calls.",
+    "filesystem": "Reads committed static assets and organism metadata; no writes.",
+    "subprocesses": "None at runtime.",
+    "secrets": "None required or permitted."
+  },
+  "extension_points": [
+    "Add backward-compatible HTTP surfaces.",
+    "Replace the current interface while preserving a verifiable health contract.",
+    "Split new independent capabilities into additional self-describing cells."
+  ],
+  "decisions": [
+    "docs/adr/0001-two-plane-architecture.md",
+    "docs/adr/0002-federated-cell-architecture.md"
+  ],
+  "replaced_by": null,
+  "metadata": {
+    "generation_created": 0
+  }
+}

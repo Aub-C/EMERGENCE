@@ -1,0 +1,56 @@
+name: emergence
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: codex-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  codex-review:
+    name: codex-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check out trusted review policy
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Fetch review evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" \
+            --jq '.[] | [.filename, .status, (.previous_filename // "")] | @tsv' > "$RUNNER_TEMP/emergence-changed-files.tsv"
+          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
+            --slurp > "$RUNNER_TEMP/emergence-reviews-pages.json"
+          jq 'add // []' "$RUNNER_TEMP/emergence-reviews-pages.json" > "$RUNNER_TEMP/emergence-reviews.json"
+          gh api "repos/$REPOSITORY/issues/$PR_NUMBER" --jq '.labels' > "$RUNNER_TEMP/emergence-labels.json"
+          gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/events?per_page=100" \
+            --slurp > "$RUNNER_TEMP/emergence-label-events-pages.json"
+          jq 'add // []' "$RUNNER_TEMP/emergence-label-events-pages.json" > "$RUNNER_TEMP/emergence-label-events.json"
+
+      - name: Require adversarial review for executable mutations
+        env:
+          EMERGENCE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node trusted/control-plane/codex-gate-cli.mjs \
+            trusted/control-plane/policy.json \
+            "$RUNNER_TEMP/emergence-changed-files.tsv" \
+            "$RUNNER_TEMP/emergence-reviews.json" \
+            "$RUNNER_TEMP/emergence-labels.json" \
+            "$RUNNER_TEMP/emergence-label-events.json"

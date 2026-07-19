@@ -1,0 +1,74 @@
+{
+  "$schema": "../protocol/cell.schema.json",
+  "protocol_version": 1,
+  "id": "platform.repository-intelligence",
+  "name": "Repository Intelligence",
+  "status": "active",
+  "purpose": "Discover self-describing cells and compile bounded, machine-readable context packets for autonomous agents.",
+  "scope": [
+    "scripts/catalog.mjs",
+    "scripts/orient.mjs",
+    "scripts/lib/cells.mjs",
+    "scripts/CELL.json",
+    "protocol/cell.schema.json",
+    "test/orientation.test.mjs",
+    "docs/SCALING_ARCHITECTURE.md",
+    "docs/adr/0002-federated-cell-architecture.md"
+  ],
+  "entrypoints": [
+    "scripts/catalog.mjs",
+    "scripts/orient.mjs"
+  ],
+  "interfaces": [
+    {
+      "name": "cell-catalog",
+      "kind": "cli-json",
+      "contract": "npm run catalog emits a JSON catalog of every valid CELL.json or exits non-zero."
+    },
+    {
+      "name": "agent-orientation",
+      "kind": "cli-json",
+      "contract": "npm run orient -- --cell <id> or --path <path> emits a bounded orientation packet."
+    }
+  ],
+  "depends_on": [],
+  "capabilities": [
+    "discover-cell-manifests",
+    "validate-cell-identities",
+    "map-paths-to-cells",
+    "compile-bounded-agent-context",
+    "report-cell-dependencies-and-dependents"
+  ],
+  "read_first": [
+    "docs/SCALING_ARCHITECTURE.md",
+    "docs/adr/0002-federated-cell-architecture.md",
+    "protocol/cell.schema.json",
+    "scripts/lib/cells.mjs",
+    "scripts/orient.mjs",
+    "test/orientation.test.mjs"
+  ],
+  "validation": [
+    "npm run validate",
+    "npm run catalog",
+    "npm test"
+  ],
+  "security": {
+    "risk": "medium",
+    "network": "No network access.",
+    "filesystem": "Read-only repository traversal and metadata reads.",
+    "subprocesses": "Runs read-only git log to summarize recent target-cell history.",
+    "secrets": "None required or permitted."
+  },
+  "extension_points": [
+    "Add contract graph and cross-cell import analysis.",
+    "Add token-budget-aware context packing.",
+    "Add remote cell coordinates when the project later federates across repositories."
+  ],
+  "decisions": [
+    "docs/adr/0002-federated-cell-architecture.md"
+  ],
+  "replaced_by": null,
+  "metadata": {
+    "generation_created": 0
+  }
+}

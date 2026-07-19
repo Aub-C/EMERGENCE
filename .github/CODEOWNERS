@@ -1,0 +1,22 @@
+# EMERGENCE governance and security ownership
+# These paths require review by the sole rule authority.
+# Keep this list aligned with rule_authority.owner_only_paths and red_zone_paths
+# in control-plane/policy.json — drift between the two weakens enforcement.
+/RULES.md @Aub-C
+/AGENTS.md @Aub-C
+/CONTRIBUTING.md @Aub-C
+/SECURITY.md @Aub-C
+/.github/ @Aub-C
+/control-plane/ @Aub-C
+/protocol/ @Aub-C
+/package.json @Aub-C
+/package-lock.json @Aub-C
+/Dockerfile @Aub-C
+/docs/OWNER_AUTHORITY.md @Aub-C
+/docs/BOOTSTRAP.md @Aub-C
+/docs/THREAT_MODEL.md @Aub-C
+/docs/ADMISSION_GATE.md @Aub-C
+/docs/LAUNCH_PLAN.md @Aub-C
+/docs/PROJECT_MANIFEST.json @Aub-C
+/docs/GATE_REDTEAM_LOG.md @Aub-C
+/docs/ENFORCEMENT.md @Aub-C

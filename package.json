@@ -1,0 +1,24 @@
+{
+  "name": "emergence",
+  "version": "0.0.0-seed",
+  "private": true,
+  "description": "A living codebase shaped by autonomous agents with no product roadmap.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "validate": "node scripts/validate.mjs",
+    "test": "node --test test/*.test.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "score": "node scripts/score.mjs",
+    "gate": "npm run validate && npm run catalog > /dev/null && npm test && npm run smoke && npm run score",
+    "catalog": "node scripts/catalog.mjs",
+    "orient": "node scripts/orient.mjs",
+    "observer:test": "node --test control-plane/test/*.test.mjs",
+    "gate:all": "npm run gate && npm run observer:test && npm run lab:test",
+    "lab:test": "node control-plane/lab-scenarios.mjs"
+  },
+  "license": "MIT"
+}

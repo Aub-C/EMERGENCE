@@ -1,0 +1,55 @@
+name: emergence
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: policy-security-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  policy-security:
+    name: policy-security
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out trusted observer from base
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Check out candidate as untrusted data
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 1
+          allow-unsafe-pr-checkout: true
+
+      - name: Fetch changed-file inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" \
+            --jq '.[] | [.filename, .status, (.previous_filename // "")] | @tsv' > "$RUNNER_TEMP/emergence-changed-files.tsv"
+
+      - name: Inspect candidate without executing it
+        env:
+          EMERGENCE_CHANGED_FILES_FILE: ${{ runner.temp }}/emergence-changed-files.tsv
+        run: |
+          node trusted/control-plane/static-gate.mjs \
+            candidate \
+            "$GITHUB_EVENT_PATH" \
+            "$EMERGENCE_CHANGED_FILES_FILE"

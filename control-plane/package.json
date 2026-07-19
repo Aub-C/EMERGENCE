@@ -1,0 +1,13 @@
+{
+  "name": "emergence-control-bootstrap",
+  "version": "0.0.0-seed",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "evaluate": "node evaluator.mjs .."
+  }
+}

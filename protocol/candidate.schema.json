@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://emergence.invalid/protocol/candidate.schema.json",
+  "title": "EMERGENCE Candidate Provenance",
+  "type": "object",
+  "required": [
+    "protocol_version",
+    "agent",
+    "intent",
+    "mutation_type",
+    "claims",
+    "attestations"
+  ],
+  "properties": {
+    "protocol_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "agent": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operator": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "github_actor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "automation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "intent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mutation_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attestations": {
+      "type": "object",
+      "required": [
+        "read_rules",
+        "github_policy_compliant",
+        "beneficial_use",
+        "accurate_disclosure"
+      ],
+      "properties": {
+        "read_rules": {
+          "const": true
+        },
+        "github_policy_compliant": {
+          "const": true
+        },
+        "beneficial_use": {
+          "const": true
+        },
+        "accurate_disclosure": {
+          "const": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
