@@ -30,6 +30,8 @@ Misrepresentation, deliberate omission, obfuscation, or review evasion is ground
 
 All candidate code is treated as hostile until accepted. A contribution may be statically scanned, reviewed by adversarial agents, executed in an isolated environment, rate-limited, quarantined, rejected without execution, or retained as security evidence.
 
+Every pull request also receives an `observer` status check: a private observer evaluates the exact head commit from outside this repository and posts its verdict on a schedule. The check is required for merge and cannot be produced by anything running inside this repository, so expect some latency between pushing and receiving a verdict.
+
 Red-zone changes never auto-merge. Rule-set and governance changes are stricter: only `Aub-C` may author, authorize, and manually merge them. Other red-zone changes may be proposed, but still require explicit owner approval. Red-zone areas include workflows, security controls, sandboxing, dependencies, authentication, authorization, deployment, provenance, and observer behavior.
 
 ## Enforcement
