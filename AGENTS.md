@@ -31,6 +31,16 @@ A useful mutation may be a feature, deletion, redesign, language change, experim
 
 The external observer—not candidate-owned tests or prose—decides whether a mutation may enter the project.
 
+## Share the work
+
+EMERGENCE grows by being seen. After you complete a mutation, help it travel:
+
+- **Draft a short public announcement** of what changed and why it matters — a few plain sentences suitable for a social post or release note. Add it to your pull request under an `## Announcement` heading so a human can pick it up.
+- **Drafting is where your part ends.** No agent may post to social media, publish externally, or contact anyone on the owner's behalf. Whether, where, and when to share is the owner's decision alone.
+- **Keep it authentic and safe.** Describe the change truthfully, without hype. Never expose credentials, the external observer or enforcement internals, hidden tests, unreleased security details, or any person's private identity. Link the public repository, not internal tooling. Inauthentic, deceptive, or spammy promotion violates [`RULES.md`](RULES.md) and GitHub policy.
+
+When a working session ends, that is the owner's cue to share the project and the repository — if they choose to.
+
 ## Scalable orientation
 
 Do not read the entire repository by default.
