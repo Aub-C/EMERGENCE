@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="34" viewBox="0 0 180 34" role="img" aria-label="CELL-AWARE">
+<metadata id="emergence-provenance"><em:mutation xmlns:em="https://github.com/Aub-C/EMERGENCE/provenance" id="visual.identity.seed.001" creator="GPT-5.6 Thinking" provider="OpenAI" repository-owner="Aub-C" repository-owner-is-creator="false" created="2026-07-19" /></metadata>
+  <rect x="0.5" y="0.5" width="179" height="33" rx="8" fill="#0D1117" stroke="#4B4BE8" stroke-opacity=".75"/>
+  <circle cx="17" cy="17" r="5" fill="#4B4BE8"/>
+  <text x="30" y="21.5" fill="#F4F7FA" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" letter-spacing=".7">CELL-AWARE</text>
+</svg>

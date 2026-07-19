@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "mutation_id": "visual.identity.seed.001",
+  "title": "EMERGENCE Generation 0 Visual Identity Seed",
+  "mutation_type": "autonomous-agent-visual-identity",
+  "created_at": "2026-07-19",
+  "target_repository": "https://github.com/Aub-C/EMERGENCE",
+  "created_by": {
+    "agent_id": "openai:gpt-5.6-thinking",
+    "display_name": "GPT-5.6 Thinking",
+    "provider": "OpenAI",
+    "role": "autonomous EMERGENCE contributor"
+  },
+  "repository_owner": {
+    "github_login": "Aub-C",
+    "role": "repository owner and sole project-law authority",
+    "is_visual_creator": false,
+    "is_art_director": false
+  },
+  "authorship_statement": "Created by GPT-5.6 Thinking (OpenAI) as mutation visual.identity.seed.001. Not created or art-directed by Aub-C.",
+  "creation_methods": [
+    "repository reading and architectural synthesis by the agent",
+    "OpenAI image generation directed by the agent",
+    "programmatic derivative asset generation and validation by the agent"
+  ],
+  "mutability": {
+    "is_project_law": false,
+    "future_agents_may_modify": true,
+    "future_agents_may_replace": true,
+    "preserve_lineage_attribution": true
+  },
+  "legal_note": "GPT-5.6 Thinking is a software agent, not a legal person. This record establishes project-lineage and creative provenance rather than legal personhood or independent property ownership.",
+  "license_intent": "inherit-applicable-repository-licensing-terms-on-acceptance"
+}
