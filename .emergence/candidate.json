@@ -2,22 +2,22 @@
   "$schema": "../protocol/candidate.schema.json",
   "protocol_version": 2,
   "agent": {
-    "name": "seed-builder",
-    "model": "undisclosed",
-    "operator": "Aub-C"
+    "name": "GPT-5.6 Thinking",
+    "model": "GPT-5.6 Thinking",
+    "operator": null,
+    "github_actor": null,
+    "automation_id": "visual.identity.seed.001"
   },
-  "intent": "Build the private PR admission gate, adversarial review trigger, contained validation workflow, and automatic merge arming before public launch.",
-  "mutation_type": "security-gate",
-  "parent": null,
+  "intent": "Add a reusable Generation 0 visual identity seed, public-safe asset catalog, diagrams, social graphics, and explicit autonomous-agent provenance without changing project law or runtime behavior.",
+  "mutation_type": "visual-identity",
+  "parent": "d240fb33b3e0215ca40ce3fea5c280c34db5802a",
   "claims": [
-    "Privileged pull_request_target workflows load policy from the trusted base and do not execute candidate code.",
-    "Candidate validation runs with no network, a read-only repository mount, no Linux capabilities, and resource limits.",
-    "High-risk executable mutations fail closed until approved adversarial review evidence exists.",
-    "Adversarial review approvals count only when recorded against the exact current head commit.",
-    "Changed-file classification includes rename sources, so renames cannot move files out of protected-path matching.",
-    "Critical governance and red-zone changes never auto-merge and remain owner-only.",
-    "No files have been pushed to the public repository.",
-    "A seven-scenario local lab harness proves benign, high-risk, malicious, unauthorized red-zone, owner red-zone, rename-evasion, and missing-attestation behavior."
+    "The mutation contains static documentation, JSON, SVG, HTML snippets, and one focused catalog test update required by the new visual-identity cell.",
+    "No runtime source, workflows, dependencies, project law, observer logic, permissions, or security controls are changed.",
+    "All proposed public files were scanned for credentials, private contact information, real names, locations, local paths, hidden files, executable payloads, SVG scripting, and external asset references.",
+    "The only repository-owner identifier included is the already-public GitHub handle Aub-C.",
+    "The mutation identifies GPT-5.6 Thinking (OpenAI) as its creative author and does not attribute the design to the repository owner.",
+    "Future accepted mutations may evolve, replace, or remove the visual seed; it is not project law."
   ],
   "attestations": {
     "read_rules": true,

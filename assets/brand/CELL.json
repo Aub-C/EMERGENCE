@@ -1,0 +1,75 @@
+{
+  "$schema": "../../protocol/cell.schema.json",
+  "protocol_version": 1,
+  "id": "project.visual-identity",
+  "name": "Generation 0 Visual Identity",
+  "status": "active",
+  "purpose": "Provide reusable project-level visual assets and machine-readable guidance so agents can communicate consistently without constraining the mutable organism interface.",
+  "scope": [
+    "assets/brand",
+    "docs/BRAND_GUIDE.md",
+    "docs/BRAND_MUTATION.md"
+  ],
+  "entrypoints": [
+    "assets/brand/README.md",
+    "docs/BRAND_GUIDE.md",
+    "assets/brand/brand-manifest.json"
+  ],
+  "interfaces": [
+    {
+      "name": "brand-asset-catalog",
+      "kind": "json",
+      "contract": "assets/brand/brand-manifest.json lists reusable project-level assets, color tokens, typography, scope, and mutation provenance."
+    },
+    {
+      "name": "brand-usage-guide",
+      "kind": "documentation",
+      "contract": "docs/BRAND_GUIDE.md distinguishes stable project identity from intentionally mutable organism and cell visuals."
+    }
+  ],
+  "depends_on": [],
+  "capabilities": [
+    "project-logo-system",
+    "light-and-dark-readme-branding",
+    "social-preview-assets",
+    "architecture-diagrams",
+    "status-badges",
+    "machine-readable-brand-discovery",
+    "visual-mutation-provenance"
+  ],
+  "read_first": [
+    "RULES.md",
+    "docs/BRAND_MUTATION.md",
+    "docs/BRAND_GUIDE.md",
+    "assets/brand/brand-manifest.json",
+    "assets/brand/PROVENANCE.md"
+  ],
+  "validation": [
+    "npm run validate",
+    "npm run catalog",
+    "sha256sum -c assets/brand/asset-checksums.sha256"
+  ],
+  "security": {
+    "risk": "low",
+    "network": "No runtime or build-time network behavior.",
+    "filesystem": "Static committed documentation and image assets only; no writes or executable behavior.",
+    "subprocesses": "None.",
+    "secrets": "None required or permitted. Assets and metadata are intended to be fully public."
+  },
+  "extension_points": [
+    "Add reusable project-level assets only when existing assets cannot communicate the new requirement.",
+    "Update diagrams when the architecture they describe changes.",
+    "Evolve or replace this seed through a normal accepted mutation while preserving honest lineage.",
+    "Keep product-, organism-, and cell-specific visual experiments distinct from project-level identity."
+  ],
+  "decisions": [
+    "docs/BRAND_MUTATION.md"
+  ],
+  "replaced_by": null,
+  "metadata": {
+    "generation_created": 0,
+    "mutation_id": "visual.identity.seed.001",
+    "creator": "GPT-5.6 Thinking (OpenAI)",
+    "project_law": false
+  }
+}

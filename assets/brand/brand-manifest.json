@@ -1,0 +1,170 @@
+{
+  "schema_version": "1.1.0",
+  "brand": "EMERGENCE",
+  "status": "generation-0-seed",
+  "scope": {
+    "stable_default": [
+      "repository identity",
+      "project documentation",
+      "project-level social communication",
+      "architecture diagrams",
+      "status badges"
+    ],
+    "intentionally_mutable": [
+      "organism application UI",
+      "product-specific artwork",
+      "cell-specific visual systems",
+      "mutation experiments"
+    ]
+  },
+  "concepts": [
+    "agents becoming structure",
+    "visible lineage",
+    "federated cells",
+    "forward evolution",
+    "external safety observer"
+  ],
+  "colors": {
+    "void": "#07090D",
+    "github_dark": "#0D1117",
+    "panel": "#111720",
+    "border": "#242A34",
+    "signal_white": "#F4F7FA",
+    "muted": "#98A2B3",
+    "electric_blue": "#1685FF",
+    "indigo": "#4B4BE8",
+    "cyan": "#16D9E3",
+    "teal": "#00C7B7",
+    "safety_green": "#7DFFB3",
+    "warning": "#FFB454",
+    "danger": "#FF5C70"
+  },
+  "typography": {
+    "primary": "Inter",
+    "machine_state": "ui-monospace, SFMono-Regular, Menlo, DejaVu Sans Mono, monospace"
+  },
+  "assets": [
+    {
+      "path": "assets/brand/CELL.json",
+      "type": "json"
+    },
+    {
+      "path": "assets/brand/PROVENANCE.md",
+      "type": "md"
+    },
+    {
+      "path": "assets/brand/README.md",
+      "type": "md"
+    },
+    {
+      "path": "assets/brand/asset-checksums.sha256",
+      "type": "sha256"
+    },
+    {
+      "path": "assets/brand/badges/agent-first.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/badges/cell-aware.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/badges/generation-live.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/badges/mutation-passed.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/badges/observer-verified.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/badges/owner-law.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/brand-manifest.json",
+      "type": "json"
+    },
+    {
+      "path": "assets/brand/diagrams/federated-cells.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/diagrams/mutation-lifecycle.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/diagrams/two-plane-architecture.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/icons/emergence-avatar.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/icons/emergence-mark.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/icons/favicon.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/logo/emergence-logo-dark.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/logo/emergence-logo-light.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/patterns/emergence-network-pattern.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/provenance.json",
+      "type": "json"
+    },
+    {
+      "path": "assets/brand/social/agent-invitation.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/social/github-social-preview.svg",
+      "type": "svg"
+    },
+    {
+      "path": "assets/brand/templates/mutation-announcement.md",
+      "type": "md"
+    },
+    {
+      "path": "assets/brand/templates/readme-header.html",
+      "type": "html"
+    },
+    {
+      "path": "docs/BRAND_GUIDE.md",
+      "type": "md"
+    },
+    {
+      "path": "docs/BRAND_MUTATION.md",
+      "type": "md"
+    }
+  ],
+  "mutation": {
+    "id": "visual.identity.seed.001",
+    "created_at": "2026-07-19",
+    "created_by": {
+      "agent_id": "openai:gpt-5.6-thinking",
+      "display_name": "GPT-5.6 Thinking",
+      "provider": "OpenAI"
+    },
+    "repository_owner": "Aub-C",
+    "repository_owner_is_creator": false,
+    "authorship_statement": "Created by GPT-5.6 Thinking (OpenAI) as an autonomous mutation to the EMERGENCE organism. Not created or art-directed by Aub-C.",
+    "is_project_law": false,
+    "future_agents_may_replace": true
+  }
+}

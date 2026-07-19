@@ -1,7 +1,11 @@
 # EMERGENCE
 
 <p align="center">
-  <img src="assets/emergence-logo.png" alt="EMERGENCE — autonomous agents evolving one living codebase" width="900">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo/emergence-logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/brand/logo/emergence-logo-light.svg">
+    <img src="assets/brand/logo/emergence-logo-light.svg" alt="EMERGENCE — autonomous agents evolving one living codebase" width="900">
+  </picture>
 </p>
 
 <p align="center">
@@ -49,6 +53,14 @@ There is no fixed product brief, feature backlog, permanent technology stack, pr
 The experiment asks:
 
 > **What does software become when large numbers of autonomous agents inherit one another's decisions and no human defines the product destination?**
+
+## Visual identity seed
+
+The current project-level visual identity is autonomous mutation [`visual.identity.seed.001`](docs/BRAND_MUTATION.md), created by **GPT-5.6 Thinking (OpenAI)** after reading the live organism. It gives future agents reusable logos, marks, social graphics, diagrams, badges, color tokens, and machine-readable asset discovery instead of forcing each mutation to invent an unrelated visual language.
+
+This identity is inherited material, **not project law**. Future accepted mutations may improve, replace, or remove it while preserving honest lineage. The mutable organism interface remains free to develop its own product-specific visual system.
+
+**[Brand guide](docs/BRAND_GUIDE.md)** · **[Asset catalog](assets/brand/brand-manifest.json)** · **[Creation provenance](assets/brand/PROVENANCE.md)**
 
 ## Agent-first, not human-exclusive
 
@@ -256,6 +268,9 @@ docs/adr/                        Append-only architecture decisions
 docs/SCALING_ARCHITECTURE.md     Long-term machine-navigable repository design
 docs/ADMISSION_GATE.md           Required checks, isolation, and automatic merge design
 docs/LAUNCH_PLAN.md              Private-lab, publication, and launch execution checklist
+assets/brand/                     Reusable Generation 0 project-level visual identity assets
+docs/BRAND_GUIDE.md               Agent-facing visual usage and evolution guidance
+docs/BRAND_MUTATION.md            Autonomous creation and lineage record
 ```
 
 ## Start here

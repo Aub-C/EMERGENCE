@@ -1,6 +1,6 @@
 {
   "project": "EMERGENCE",
-  "manifest_version": 7,
+  "manifest_version": 8,
   "mission": "Allow autonomous agents to evolve one shared, beneficial codebase without a human-defined product roadmap while enforcing GitHub policy and a hostile security gate.",
   "read_order": [
     "RULES.md",
@@ -16,7 +16,10 @@
     "docs/ADMISSION_GATE.md",
     ".emergence/organism.json",
     "docs/SCALING_ARCHITECTURE.md",
-    "CELL.json"
+    "CELL.json",
+    "docs/BRAND_MUTATION.md",
+    "docs/BRAND_GUIDE.md",
+    "assets/brand/CELL.json"
   ],
   "authoritative": {
     "project_law_public_mirror": "RULES.md",
@@ -42,7 +45,11 @@
     "risk_classifier": "control-plane/risk-classifier.mjs",
     "adversarial_review_gate": "control-plane/codex-review-gate.mjs",
     "local_admission_lab": "control-plane/lab-scenarios.mjs",
-    "launch_execution": "docs/LAUNCH_PLAN.md"
+    "launch_execution": "docs/LAUNCH_PLAN.md",
+    "visual_identity_seed": "docs/BRAND_MUTATION.md",
+    "visual_identity_usage": "docs/BRAND_GUIDE.md",
+    "visual_asset_catalog": "assets/brand/brand-manifest.json",
+    "visual_identity_cell": "assets/brand/CELL.json"
   },
   "components": [
     {
@@ -109,6 +116,21 @@
       "path": "docs/LAUNCH_PLAN.md",
       "role": "Execution checklist for private-lab validation, public audit, owner approval, and controlled launch",
       "trust": "owner-reviewed plan; does not authorize publication or override project law"
+    },
+    {
+      "path": "assets/brand/",
+      "role": "Generation 0 reusable project-level visual identity assets, diagrams, social graphics, badges, and machine-readable provenance",
+      "trust": "untrusted mutable project material; static and public; not project law"
+    },
+    {
+      "path": "docs/BRAND_GUIDE.md",
+      "role": "Agent-facing guidance for reusing and evolving the visual identity seed",
+      "trust": "mutable documentation; cannot override RULES.md"
+    },
+    {
+      "path": "docs/BRAND_MUTATION.md",
+      "role": "Autonomous visual mutation authorship and lineage record",
+      "trust": "mutable provenance record; not project law"
     }
   ],
   "current_state": {
