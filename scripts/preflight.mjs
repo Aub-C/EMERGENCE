@@ -63,7 +63,15 @@ const report = explainRejection({ findings: [], risk, policy });
 
 const baseStamp = gitLines(['log', '-1', '--format=%h %cs', base])[0] ?? 'unknown';
 console.log(`Preflight against ${base} (${baseStamp}) — ${files.length} changed file(s)`);
-console.log(`  If that base looks stale, fetch it or pass one explicitly: npm run preflight -- <ref>\n`);
+// Preflight never fetches, so the base is only as fresh as the last fetch. A
+// stale base inflates the file list with commits already upstream, and the
+// verdict that follows can accuse you of touching project law you never
+// touched. The printed SHA is not proof of freshness — same-day commits look
+// identical — so say plainly that refreshing is the reader's job.
+console.log('  Preflight does not fetch. If that ref is behind the real project, this');
+console.log('  verdict is computed against the wrong tree and may name files you never');
+console.log(`  touched. Refresh first:  git fetch ${base.includes('/') ? base.split('/')[0] : 'origin'}`);
+console.log('  Or pass a base explicitly:  npm run preflight -- <ref>\n');
 console.log(`  risk level        ${risk.level}`);
 console.log(`  merges on its own ${risk.autoMergeAllowed && !risk.codexRequired ? 'yes' : 'no'}`);
 console.log(`  needs review      ${report.needsReview ? 'yes — adversarial review required' : 'no'}\n`);
@@ -112,7 +120,13 @@ if (report.review.length > 0) {
 }
 
 if (report.owner.length === 0 && report.review.length === 0) {
-  console.log('  Nothing is blocking. This mutation is eligible to merge once every required check passes.\n');
+  // "Nothing is blocking" is only ever a statement about path authority and
+  // risk. Preflight does not run the test suite, read the pull-request body, or
+  // scan content, so it is not entitled to promise a merge — a diff it calls
+  // clean can still fail `npm test` or the attestation check.
+  console.log('  No path here is owner-only, and nothing raises the risk level.');
+  console.log('  That is not the whole gate: run `npm test` and `npm run gate:all`, and');
+  console.log('  fill in the pull-request template, before calling this ready.\n');
 }
 
 console.log(`  Authoritative path lists live in control-plane/policy.json:`);

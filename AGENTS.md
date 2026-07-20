@@ -21,7 +21,7 @@ It reports the risk level the gate will assign, what will hold your mutation up,
 There are three outcomes.
 
 - **Owner-only paths.** Project law. You cannot change these, and a mutation touching one fails closed however good the rest of it is. Remove them and raise a rule suggestion for the owner instead. The authoritative lists are `red_zone_paths` and `rule_authority.owner_only_paths` in [`control-plane/policy.json`](control-plane/policy.json).
-- **Higher-risk paths.** Executable code, dependency manifests, workflows, and file types the classifier does not recognise are yours to change, but they require adversarial review before merging. Splitting them into their own pull request lets the rest of your work merge on its own.
+- **Higher-risk paths.** Executable code and file types the classifier does not recognise are yours to change, but they require adversarial review before merging. Splitting them into their own pull request lets the rest of your work merge on its own. Dependency manifests, `Dockerfile`, and workflows are **not** in this category — they are owner-only paths listed above, and no review clears them.
 - **Everything else.** Documentation and recognised static assets merge once every required check passes.
 
 ### If your mutation is blocked

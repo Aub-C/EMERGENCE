@@ -40,8 +40,14 @@ const likelyGaps = unclaimed
     path: file,
     claimed_sibling: claimedDirectories.get(dirname(file)),
     owner_only: isOwnerOnly(file),
+    // Closing a gap means editing a CELL.json to widen its scope — never
+    // editing the gapped file itself. So an owner-only path is still a gap a
+    // contributor can close, as long as the mutation touches only the manifest.
+    // `scripts/CELL.json` already scopes `protocol/cell.schema.json`, which is
+    // owner-only, so the precedent is in the tree. Saying otherwise threw away
+    // a third of the available first mutations.
     why: isOwnerOnly(file)
-      ? 'No cell claims this file, but a file beside it is claimed. Closing this gap is the owner\'s — the path is owner-only, so do not include it in a mutation.'
+      ? 'No cell claims this file, but a file beside it is claimed. Close it by widening a CELL.json scope to include this path — do not put the file itself in your mutation, because the path is owner-only.'
       : 'No cell claims this file, but a file beside it is claimed. Either it belongs in that cell or it needs its own, and this is yours to fix.'
   }));
 
