@@ -139,6 +139,15 @@ test('orientation never offers an owner-only path as preferred scope', async () 
     assert.ok(guidance.owner_only_scope.includes(path), `${path} must still be disclosed as owner-only`);
   }
   assert.match(guidance.owner_only_scope_note, /owner/i);
+
+  // Round 4 flagged that this packet steers newcomers at a scope which is almost
+  // entirely executable, without saying so — true, but only discoverable after
+  // the work was done, when preflight exits 1 and looks like a broken build.
+  // The prediction comes from the gate's own classifier, so it cannot drift from
+  // the verdict a contributor eventually receives.
+  assert.match(guidance.review_expectation, /high risk/, 'the seed cell is mostly executable and must say so');
+  assert.match(guidance.review_expectation, /not a fault in your work/i, 'exit 1 here is the classification, not a defect');
+  assert.match(guidance.review_expectation, /preflight/, 'it points at the tool that gives the real verdict');
 });
 
 // A path outside every cell scope is the common case for a newcomer improving

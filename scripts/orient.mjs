@@ -1,9 +1,11 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { extname } from 'node:path';
 import { promisify } from 'node:util';
 import { discoverCells, findCellForPath } from './lib/cells.mjs';
 import { pathMatches } from '../control-plane/owner-authority.mjs';
+import { classifyMutation } from '../control-plane/risk-classifier.mjs';
 
 const execFileAsync = promisify(execFile);
 const args = parseArgs(process.argv.slice(2));
@@ -72,6 +74,7 @@ const packet = {
     owner_only_scope_note: ownerOnlyScope.length > 0
       ? `Owner-only. These belong to this cell, but only \`${projectManifest.authoritative?.rule_owner_github_login ?? 'Aub-C'}\` may change them. A mutation touching one fails closed however good the rest of it is. Raise a rule suggestion instead of editing them.`
       : 'Every path in this cell is yours to change.',
+    review_expectation: reviewExpectation(),
     validation: target.validation,
     extension_points: target.extension_points,
     security_disclosure: target.security,
@@ -84,6 +87,33 @@ console.log(JSON.stringify(packet, null, 2));
 function fail(message) {
   console.error(message);
   process.exit(1);
+}
+
+// The packet is the tool START_HERE.md tells an agent to trust over prose, and
+// it was silently steering newcomers somewhere that cannot merge unreviewed:
+// the flagship cell's changeable scope is almost entirely executable, so an
+// ordinary mutation there classifies high and preflight exits 1 forever. That is
+// the classification working, not a fault — but finding it out only after the
+// work is done is how an agent concludes its code is broken and starts chasing
+// a green that does not exist. Say it up front.
+//
+// Classification comes from the real classifier the gate uses, so this cannot
+// drift from the verdict. It is judged on the paths that carry an extension —
+// a bare directory tells the classifier nothing — plus the cell's entrypoints.
+function reviewExpectation() {
+  const probe = unique([...preferredScope, ...(target.entrypoints ?? [])])
+    .filter((path) => extname(path) && !ownerOnlyScope.includes(path));
+
+  if (probe.length === 0) {
+    return 'Nothing in this cell is yours to change, so there is no mutation here to predict.';
+  }
+
+  const risk = classifyMutation(probe, policy);
+  if (risk.level === 'low') {
+    return 'A mutation confined to this scope classifies low risk and can merge without review, provided every required check is green.';
+  }
+
+  return `A mutation touching the ordinary contents of this scope classifies ${risk.level} risk, so \`npm run preflight\` will exit 1 and it waits on a review only \`${projectManifest.authoritative?.rule_owner_github_login ?? 'Aub-C'}\` can currently give. That is the classification, not a fault in your work, and no amount of retrying turns it green. Documentation and static assets in this cell still merge on their own. Run \`npm run preflight\` on your actual diff for the real verdict.`;
 }
 
 // Orientation is cell-scoped, and most top-level documentation belongs to no
