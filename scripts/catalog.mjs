@@ -37,20 +37,37 @@ for (const file of tracked) {
 const likelyGaps = unclaimed
   .filter((file) => dirname(file) !== '.')
   .filter((file) => claimedDirectories.has(dirname(file)))
-  .map((file) => ({
-    path: file,
-    claimed_sibling: claimedDirectories.get(dirname(file)),
-    owner_only: isOwnerOnly(file),
+  .map((file) => {
+    const sibling = claimedDirectories.get(dirname(file));
+    const claimingCell = findCellForPath(catalog, sibling);
     // Closing a gap means editing a CELL.json to widen its scope — never
-    // editing the gapped file itself. So an owner-only path is still a gap a
+    // editing the gapped file itself. So an owner-only *path* is still a gap a
     // contributor can close, as long as the mutation touches only the manifest.
     // `scripts/CELL.json` already scopes `protocol/cell.schema.json`, which is
-    // owner-only, so the precedent is in the tree. Saying otherwise threw away
-    // a third of the available first mutations.
-    why: isOwnerOnly(file)
-      ? 'No cell claims this file, but a file beside it is claimed. Close it by widening a CELL.json scope to include this path — do not put the file itself in your mutation, because the path is owner-only.'
-      : 'No cell claims this file, but a file beside it is claimed. Either it belongs in that cell or it needs its own, and this is yours to fix.'
-  }));
+    // owner-only, so the precedent is in the tree.
+    //
+    // But that only holds while the manifest itself is editable. Most of these
+    // gaps sit beside a file claimed by `governance.admission-gate`, whose
+    // manifest is `control-plane/CELL.json` — red-zone. Telling a contributor
+    // that one is "yours to fix" sends them at a guaranteed critical hard-fail,
+    // via the one mutation the entry-point doc recommends to newcomers.
+    const manifest = claimingCell?.manifest_path ?? null;
+    const manifestIsOwnerOnly = manifest ? isOwnerOnly(manifest) : false;
+
+    return {
+      path: file,
+      claimed_sibling: sibling,
+      claimed_by_cell: claimingCell?.id ?? null,
+      claim_manifest: manifest,
+      owner_only: isOwnerOnly(file),
+      closable_by: manifestIsOwnerOnly ? 'owner' : 'contributor',
+      why: manifestIsOwnerOnly
+        ? `No cell claims this file, but ${sibling} beside it is claimed by ${claimingCell?.id}. Widening ${manifest} is the obvious route and it is closed to you: that manifest is owner-controlled, and a mutation touching it hard-fails. Two routes remain open — widen a different cell's manifest if the file genuinely belongs to it, or give it a cell of its own. Run npm run preflight on whichever you choose before opening a pull request.`
+        : isOwnerOnly(file)
+          ? `No cell claims this file, but ${sibling} beside it is claimed. Close it by widening ${manifest} to include this path — do not put the file itself in your mutation, because the path is owner-only.`
+          : `No cell claims this file, but ${sibling} beside it is claimed. Either it belongs in ${claimingCell?.id} or it needs its own cell, and this is yours to fix by widening ${manifest}.`
+    };
+  });
 
 const output = {
   ...catalog,

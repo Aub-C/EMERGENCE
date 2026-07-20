@@ -9,7 +9,11 @@ const execFileAsync = promisify(execFile);
 test('cell catalog is valid and maps current source to seed', async () => {
   const catalog = await discoverCells();
   assert.deepEqual(catalog.errors, []);
-  assert.equal(catalog.cell_count, 3);
+  // Not a fixed number. Adding a cell is the project's own stated unit of
+  // growth (AGENTS.md), and pinning the count made that mutation fail the
+  // suite — which teaches a contributor to delete the assertion instead.
+  assert.equal(catalog.cell_count, catalog.cells.length);
+  assert.ok(catalog.cell_count >= 3, 'the three founding cells are still discoverable');
   assert.equal(findCellForPath(catalog, 'src/server.mjs')?.id, 'core.seed');
   assert.equal(findCellForPath(catalog, 'scripts/orient.mjs')?.id, 'platform.repository-intelligence');
   assert.equal(findCellForPath(catalog, 'control-plane/static-gate.mjs')?.id, 'governance.admission-gate');
@@ -64,9 +68,24 @@ test('catalog surfaces unclaimed paths and the ones that look like gaps', async 
   assert.equal(schemaGap.owner_only, true, 'protocol/** is owner-only');
   assert.match(schemaGap.why, /owner/i);
 
-  const openGap = catalog.likely_catalog_gaps.find((entry) => entry.owner_only === false);
-  assert.ok(openGap, 'contributor-fixable gaps are distinguishable from owner-only ones');
+  const openGap = catalog.likely_catalog_gaps.find((entry) => entry.closable_by === 'contributor');
+  assert.ok(openGap, 'at least one gap is actually closable by a contributor');
   assert.match(openGap.why, /yours to fix/i);
+
+  // The defect round 4 found: a gap is only "yours to fix" if the manifest you
+  // would have to widen is itself changeable. Most of these sit beside a file
+  // claimed by the admission-gate cell, whose manifest is red-zone. Advising a
+  // newcomer to close one of those is advising a guaranteed critical hard-fail,
+  // through the mutation START_HERE.md recommends first.
+  for (const entry of catalog.likely_catalog_gaps) {
+    if (entry.closable_by !== 'contributor') continue;
+    assert.equal(
+      catalog.cells.find((cell) => cell.id === entry.claimed_by_cell)?.metadata?.owner_only ?? false,
+      false,
+      `${entry.path} is offered to contributors but ${entry.claim_manifest} is owner-controlled`
+    );
+    assert.doesNotMatch(entry.claim_manifest, /^control-plane\//, `${entry.path} routes through a red-zone manifest`);
+  }
 
   // The gap this feature was written to surface. Reporting a defect and then
   // leaving it open is worse than not reporting it — the first thing an
@@ -98,7 +117,7 @@ test('catalog says it could not measure coverage rather than reporting none', as
 
   // The cells themselves come from the filesystem, so that half still works and
   // the tool is still useful — it just stops overstating what it knows.
-  assert.equal(catalog.cells.length, 3, 'cell discovery does not depend on git');
+  assert.ok(catalog.cells.length >= 3, 'cell discovery does not depend on git');
   assert.equal(catalog.errors.length, 0, 'a git-less environment is a limitation, not a failure');
 });
 

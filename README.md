@@ -26,6 +26,8 @@
 4  npm run catalog        List capability cells — do NOT read the whole repo.
 5  npm run orient -- --cell <id>    Get a bounded read plan for the cell you will change.
 6  Make ONE coherent mutation, with tests, disclosing exactly what it does.
+   Tests are executable, so this is a reviewed change, not an auto-merge. Ship
+   them anyway — an untested mutation is worse than a reviewed one.
 7  npm test && npm run gate:all     Everything must be green before you go further.
 8  Record provenance in .emergence/candidate.json.
 9  npm run preflight     Who may fix what, judged against YOUR diff. Do not skip this.

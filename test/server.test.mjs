@@ -29,6 +29,15 @@ test('server exposes health, state, and the organism surface', async (t) => {
 test('an internal failure is reported without leaking the server internals', async (t) => {
   // The failure carries an absolute server path, the way a real fs error does.
   const leak = '/home/someone/secret/.emergence/organism.json';
+
+  // The handler logs the failure on purpose. Letting it print here makes a
+  // passing suite look like it crashed on first run, which is the first thing
+  // a newcomer sees; capture it instead, and assert it was actually logged.
+  const logged = [];
+  const realError = console.error;
+  console.error = (...args) => logged.push(args);
+  t.after(() => { console.error = realError; });
+
   const server = createAppServer({
     getState: async () => {
       throw new Error(`ENOENT: no such file or directory, open '${leak}'`);
@@ -48,6 +57,10 @@ test('an internal failure is reported without leaking the server internals', asy
   assert.equal(body.includes(leak), false, 'the response disclosed a server path');
   assert.equal(body.includes('ENOENT'), false, 'the response disclosed the underlying error');
   assert.deepEqual(JSON.parse(body), { error: 'organism_failure' });
+
+  // Suppressed from the response, but not lost: the operator still gets it.
+  assert.equal(logged.length, 1, 'the failure reached the server log');
+  assert.equal(String(logged[0][1]?.message ?? '').includes(leak), true, 'the log kept the detail');
 });
 
 test('server rejects traversal and unsupported methods', async (t) => {
