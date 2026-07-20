@@ -71,7 +71,48 @@ const CATALOG = {
     fix: 'Push the missing file, or remove it from the mutation.'
   },
   'single-file-limit': { why: 'A single file exceeds the size limit.', fix: 'Split or shrink it.' },
-  'changed-byte-limit': { why: 'The mutation changes more bytes than the limit allows.', fix: 'Split it into smaller mutations.' }
+  'changed-byte-limit': { why: 'The mutation changes more bytes than the limit allows.', fix: 'Split it into smaller mutations.' },
+
+  // Policy-phase rules. These are the most common rejections a new contributor
+  // meets, and every one of them is theirs to fix. Before they were catalogued
+  // they fell to the fail-safe and were reported as owner business, which told
+  // the contributor to stop and ask about the one thing they could have fixed
+  // in a minute.
+  'required-file-missing': {
+    why: 'A file the project requires every mutation to keep is missing, unreadable, or is not a regular file.',
+    fix: 'Restore the file. If your mutation intends to remove it, it is a rule change and belongs in a suggestion to the owner.'
+  },
+  'candidate-provenance-invalid': {
+    why: 'Every mutation declares who made it in `.emergence/candidate.json`, and this one is missing, malformed, or incomplete.',
+    fix: 'Add the file with `agent.name`, `intent`, and the four attestations set to true. An existing merged mutation is the easiest template.'
+  },
+  'candidate-attestation': {
+    why: 'A required attestation in `.emergence/candidate.json` is not set to true.',
+    fix: 'Set the named attestation to true — and read what you are attesting to first. It is a claim, not a checkbox.'
+  },
+  'provenance-actor-mismatch': {
+    why: 'The `github_actor` declared in the provenance file is not the account that opened this pull request.',
+    fix: 'Set `agent.github_actor` to the account opening the pull request, or leave it out.'
+  },
+  'pull-request-attestation': {
+    why: 'The pull request body is missing required disclosure sections.',
+    fix: 'Fill in the pull request template. The missing sections are named in the gate output.'
+  },
+  'identity-denied': {
+    why: 'An identity declared by this mutation is on the project denylist.',
+    fix: 'This is an enforcement decision, not a defect. Raise it with the owner.',
+    authority: 'owner'
+  },
+  'owner-only-path': {
+    why: 'This mutation changes project law, which only the owner may change.',
+    fix: 'Remove those files from this mutation. Raise a rule suggestion for the owner instead.',
+    authority: 'owner'
+  },
+  'policy-mirror-changed': {
+    why: 'The project-law mirror no longer matches the trusted observer copy.',
+    fix: 'Restore the mirror. If it needs to change, that is a rule change and only the owner can make it.',
+    authority: 'owner'
+  }
 };
 
 const PROTECTED = {
@@ -101,9 +142,27 @@ const RISK_REASONS = [
 // than it should leaks a fragment rather than a file.
 const MESSAGE_LIMIT = 200;
 
+// A gate message may carry a filesystem error raised inside the observer's own
+// runner, whose working layout is nobody's business on a public pull request.
+const ABSOLUTE_PATH = /(?:\/(?:tmp|private|var|home|Users|root)|[A-Za-z]:\\)[^\s'"]*/g;
+
 function summarise(message) {
-  const flat = String(message).replace(/\s+/g, ' ').trim();
+  const flat = String(message).replace(/\s+/g, ' ').replace(ABSOLUTE_PATH, '<path>').trim();
   return flat.length > MESSAGE_LIMIT ? `${flat.slice(0, MESSAGE_LIMIT)}…` : flat;
+}
+
+// A contributor controls their own file paths, and this text is rendered on a
+// public pull request by a credentialed App. A backtick in a path would close
+// the code span and leave the rest as live markdown: an `@mention` that pages a
+// real person, a link that appears to come from the observer. Markdown's own
+// rule is the fix — a span may be fenced by any run of backticks, so fence with
+// one longer than anything inside the value.
+function code(value) {
+  const flat = String(value ?? 'mutation').replace(/\s+/g, ' ').trim() || 'mutation';
+  const longest = Math.max(0, ...(flat.match(/`+/g) ?? []).map((run) => run.length));
+  const fence = '`'.repeat(longest + 1);
+  const pad = flat.startsWith('`') || flat.endsWith('`') ? ' ' : '';
+  return `${fence}${pad}${flat}${pad}${fence}`;
 }
 
 export function explainRejection({ findings, risk, policy } = {}) {
@@ -130,20 +189,32 @@ export function explainRejection({ findings, risk, policy } = {}) {
     //    not a file a contributor may edit.
     if (file && protectedPaths.has(file)) continue;
 
-    // 2. A recognised rule carries a published remedy, so it is safe to hand over.
+    // 2. A recognised rule carries a published remedy. Most are the
+    //    contributor's; a few are catalogued precisely because they are NOT,
+    //    and saying "try again" to those would be its own retry loop.
     const entry = CATALOG[finding.rule];
     if (entry) {
-      contributor.push({ file, rule: finding.rule, why: entry.why, fix: entry.fix });
+      const detail = summarise(finding.message ?? '');
+      const why = detail && !entry.why.includes(detail) ? `${entry.why} (${detail})` : entry.why;
+      const remedy = { file, rule: finding.rule, why, fix: entry.fix };
+      if (entry.authority === 'owner') owner.set(`${file ?? 'mutation'}:${finding.rule}:${detail}`, remedy);
+      else contributor.push(remedy);
       continue;
     }
 
     // 3. Fail-safe. Authority is undetermined, so it is the owner's.
-    const key = `${file ?? 'mutation'}:${finding.rule ?? 'unknown'}`;
+    //
+    // The message is part of the key: policy findings often carry neither a
+    // file nor a rule, and keying without it collapsed every one of them into
+    // a single remedy — the contributor fixed one blocker, pushed, and met the
+    // next, which is the serialised retry loop this module exists to end.
+    const detail = summarise(finding.message ?? '');
+    const key = `${file ?? 'mutation'}:${finding.rule ?? 'unknown'}:${detail}`;
     if (!owner.has(key)) {
       owner.set(key, {
         file,
         rule: finding.rule ?? 'unknown',
-        why: finding.message ? `${summarise(finding.message)}. ${UNDETERMINED.why}` : UNDETERMINED.why,
+        why: detail ? `${detail}. ${UNDETERMINED.why}` : UNDETERMINED.why,
         fix: UNDETERMINED.fix
       });
     }
@@ -177,7 +248,7 @@ export function explainRejection({ findings, risk, policy } = {}) {
   };
 }
 
-export function renderRejection(report, { headSha } = {}) {
+export function renderRejection(report, { headSha, ownerNotified = false } = {}) {
   const shortSha = typeof headSha === 'string' && headSha ? headSha.slice(0, 7) : null;
 
   if (!report?.explained) {
@@ -194,14 +265,14 @@ export function renderRejection(report, { headSha } = {}) {
   if (report.contributor.length > 0) {
     lines.push(`### You can fix ${report.contributor.length === 1 ? 'this' : 'these'}`, '');
     for (const item of report.contributor) {
-      lines.push(`**\`${item.file ?? 'mutation'}\`** — ${item.rule}`, item.why, `→ ${item.fix}`, '');
+      lines.push(`**${code(item.file)}** — ${item.rule}`, item.why, `→ ${item.fix}`, '');
     }
   }
 
   if (report.owner.length > 0) {
     lines.push(`### You cannot fix ${report.owner.length === 1 ? 'this' : 'these'}`, '');
     for (const item of report.owner) {
-      lines.push(`**\`${item.file ?? 'mutation'}\`**`, item.why, `→ ${item.fix}`, '');
+      lines.push(`**${code(item.file)}**`, item.why, `→ ${item.fix}`, '');
     }
   }
 
@@ -214,9 +285,14 @@ export function renderRejection(report, { headSha } = {}) {
     }
     if (report.review.length > 0) {
       lines.push('', 'These are what raised it. You may change them — they simply wait:', '');
-      for (const item of report.review) lines.push(`- \`${item.file}\` — ${item.why}`);
+      for (const item of report.review) lines.push(`- ${code(item.file)} — ${item.why}`);
     }
-    lines.push('', 'The owner has been notified. No action is needed from you on this part.', '');
+    // Only the caller knows whether the owner was actually paged. Asserting it
+    // blindly was a lie in the case where the owner had already reviewed and
+    // the mutation was rejected for something else entirely.
+    lines.push('', ownerNotified
+      ? 'The owner has been notified. No action is needed from you on this part.'
+      : 'No action is needed from you on this part.', '');
   }
 
   const splittable = report.contributor.length > 0 || report.review.length > 0;

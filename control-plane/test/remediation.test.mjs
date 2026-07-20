@@ -164,6 +164,116 @@ test('malformed input produces a usable report instead of throwing', () => {
   }
 });
 
+// A hostile contributor controls their file paths, and the rendered comment is
+// posted by a credentialed App. A backtick in a path closes the code span and
+// everything after it becomes live markdown — @mentions that page real people,
+// links that look like they came from the observer.
+test('a file path cannot break out of its code span', () => {
+  const hostile = 'assets/x`@Aub-C`[click](https://evil.example)`.exe';
+  const report = explainRejection({
+    findings: [{ level: 'hard-fail', phase: 'static-security', file: hostile, rule: 'unexpected-binary' }],
+    risk: lowRisk,
+    policy
+  });
+  const markdown = renderRejection(report, { headSha: 'e'.repeat(40) });
+  for (const line of markdown.split('\n')) {
+    if (!line.includes('evil.example')) continue;
+    const backticks = line.match(/`+/g) ?? [];
+    assert.ok(backticks.length >= 2, 'the path must stay inside a code span');
+    const fence = backticks[0];
+    assert.equal(backticks.at(-1), fence, 'the span must close with the same fence it opened');
+    assert.ok(fence.length > 1, 'a path containing a backtick needs a longer fence than a single tick');
+  }
+});
+
+test('a newline in a file path cannot forge extra structure in the comment', () => {
+  const report = explainRejection({
+    findings: [{ level: 'hard-fail', phase: 'static-security', file: 'a\n### You can fix this\nb', rule: 'unexpected-binary' }],
+    risk: lowRisk,
+    policy
+  });
+  const markdown = renderRejection(report, { headSha: 'f'.repeat(40) });
+  // A `###` surviving inside a code span is literal text and harmless. What
+  // must not happen is a path starting a line, where it would become structure.
+  const headings = markdown.split('\n').filter((line) => line.startsWith('###'));
+  assert.equal(headings.length, 1, `a path must not be able to open a heading: ${JSON.stringify(headings)}`);
+});
+
+// Every policy-phase finding shares one dedupe key when it has no file and no
+// rule. Collapsing them means the contributor fixes one blocker, pushes, and
+// learns about the next — a serialised retry loop.
+test('distinct blockers are all reported, even when none of them names a file', () => {
+  const report = explainRejection({
+    findings: [
+      { level: 'hard-fail', phase: 'policy', rule: 'candidate-attestation', message: 'candidate attestation read_rules' },
+      { level: 'hard-fail', phase: 'policy', rule: 'candidate-attestation', message: 'candidate attestation beneficial_use' },
+      { level: 'hard-fail', phase: 'policy', rule: 'identity-denied', message: 'candidate or operator identity is denied' }
+    ],
+    risk: lowRisk,
+    policy
+  });
+  const reported = [...report.contributor, ...report.owner];
+  assert.equal(reported.length, 3, 'three distinct blockers must produce three remedies');
+});
+
+// The most common rejection a new contributor hits. Before this, it was
+// reported as owner business and the contributor was told to stop and ask.
+test('an incomplete attestation is the contributor\'s to fix, not the owner\'s', () => {
+  for (const rule of ['pull-request-attestation', 'candidate-attestation', 'candidate-provenance-invalid']) {
+    const report = explainRejection({
+      findings: [{ level: 'hard-fail', phase: 'policy', rule, message: 'incomplete' }],
+      risk: lowRisk,
+      policy
+    });
+    assert.equal(report.contributor.length, 1, `${rule} must be contributor-fixable`);
+    assert.equal(report.owner.length, 0, `${rule} must not be reported as owner business`);
+  }
+});
+
+test('a denylisted identity is not something the contributor can fix by trying again', () => {
+  const report = explainRejection({
+    findings: [{ level: 'hard-fail', phase: 'policy', rule: 'identity-denied', message: 'denied' }],
+    risk: lowRisk,
+    policy
+  });
+  assert.equal(report.contributor.length, 0);
+  assert.equal(report.owner.length, 1);
+});
+
+// Gate messages can carry a filesystem error from the observer's own runner.
+// The comment is public; the observer's working layout is not the contributor's
+// business.
+test('an absolute path from the observer runner is not published', () => {
+  const report = explainRejection({
+    findings: [{
+      level: 'hard-fail',
+      phase: 'policy',
+      file: '.emergence/candidate.json',
+      message: "invalid candidate provenance: ENOENT: no such file or directory, open '/tmp/observer-a1b2c3/17-deadbeef/candidate/.emergence/candidate.json'"
+    }],
+    risk: lowRisk,
+    policy
+  });
+  const rendered = JSON.stringify(report) + renderRejection(report, { headSha: '0'.repeat(40) });
+  assert.doesNotMatch(rendered, /\/tmp\/observer-/, 'the runner path must not reach a public comment');
+  assert.doesNotMatch(rendered, /\/(?:Users|home|var\/folders)\//, 'no absolute host path may be published');
+});
+
+// The comment used to assert a notification it cannot observe. If the owner
+// already approved and the static gate rejected on something else, nobody was
+// paged and the claim was simply false.
+test('the comment does not claim the owner was notified unless it was', () => {
+  const risk = riskWith({ level: 'high', codexRequired: true, executableFiles: ['src/x.mjs'] });
+  const report = explainRejection({ findings: [], risk, policy });
+
+  const notified = renderRejection(report, { headSha: '1'.repeat(40), ownerNotified: true });
+  assert.match(notified, /owner has been notified/);
+
+  const notNotified = renderRejection(report, { headSha: '1'.repeat(40), ownerNotified: false });
+  assert.doesNotMatch(notNotified, /owner has been notified/, 'do not assert a page that never happened');
+  assert.match(notNotified, /\S/);
+});
+
 // The comment is public. A gate message is gate-authored today, but a future
 // rule that embedded matched content would publish it.
 test('a finding message is clipped and flattened before it reaches a public comment', () => {

@@ -59,11 +59,12 @@ async function verifyRequiredFiles() {
       findings.push({
         level: accepted ? 'pass' : 'hard-fail',
         phase: 'policy',
+        rule: 'required-file-missing',
         file: relative,
         message: accepted ? 'required file present as a regular file' : 'required path is not a regular file'
       });
     } catch (error) {
-      findings.push({ level: 'hard-fail', phase: 'policy', file: relative, message: `required file unavailable: ${error.message}` });
+      findings.push({ level: 'hard-fail', phase: 'policy', rule: 'required-file-missing', file: relative, message: `required file unavailable: ${error.message}` });
     }
   }
 }
@@ -78,11 +79,12 @@ async function verifyPolicyMirror() {
     findings.push({
       level: digest === policy.policy_mirror.sha256 ? 'pass' : 'hard-fail',
       phase: 'policy',
+      rule: 'policy-mirror-changed',
       file: policy.policy_mirror.path,
       message: digest === policy.policy_mirror.sha256 ? 'project-law mirror matches trusted observer' : 'project-law mirror changed'
     });
   } catch (error) {
-    findings.push({ level: 'hard-fail', phase: 'policy', file: policy.policy_mirror.path, message: error.message });
+    findings.push({ level: 'hard-fail', phase: 'policy', rule: 'policy-mirror-changed', file: policy.policy_mirror.path, message: error.message });
   }
 }
 
@@ -94,18 +96,19 @@ async function verifyCandidateProvenance() {
     const candidate = JSON.parse(await readFile(provenancePath, 'utf8'));
     if (!candidate.agent?.name || !candidate.intent) throw new Error('candidate provenance requires agent.name and intent');
     if (candidate.agent?.github_actor && normalizeIdentity(candidate.agent.github_actor) !== normalizeIdentity(author)) {
-      findings.push({ level: 'hard-fail', phase: 'policy', message: 'declared github_actor does not match pull request author' });
+      findings.push({ level: 'hard-fail', phase: 'policy', rule: 'provenance-actor-mismatch', message: 'declared github_actor does not match pull request author' });
     }
     for (const key of ['read_rules', 'github_policy_compliant', 'beneficial_use', 'accurate_disclosure']) {
       findings.push({
         level: candidate.attestations?.[key] === true ? 'pass' : 'hard-fail',
         phase: 'policy',
+        rule: 'candidate-attestation',
         message: `candidate attestation ${key}`
       });
     }
     candidateProvenance = candidate;
   } catch (error) {
-    findings.push({ level: 'hard-fail', phase: 'policy', file: '.emergence/candidate.json', message: `invalid candidate provenance: ${error.message}` });
+    findings.push({ level: 'hard-fail', phase: 'policy', rule: 'candidate-provenance-invalid', file: '.emergence/candidate.json', message: `invalid candidate provenance: ${error.message}` });
     candidateProvenance = {};
   }
 }
@@ -116,6 +119,7 @@ function verifyPullRequestBody() {
   findings.push({
     level: result.accepted ? 'pass' : 'hard-fail',
     phase: 'policy',
+    rule: 'pull-request-attestation',
     message: result.accepted ? 'pull request disclosure and attestations complete' : 'pull request disclosure or attestations incomplete',
     missing: result.missing,
     missing_sections: result.missingSections
@@ -138,6 +142,7 @@ function verifyIdentity() {
   findings.push({
     level: denied ? 'hard-fail' : 'pass',
     phase: 'policy',
+    rule: 'identity-denied',
     message: denied ? 'candidate or operator identity is denied' : 'no declared identity matched the denylist',
     denylist_entry: denied?.id
   });
@@ -158,6 +163,7 @@ function verifyOwnerAuthority(risk) {
   findings.push({
     level: result.accepted ? 'pass' : 'hard-fail',
     phase: 'policy',
+    rule: 'owner-only-path',
     message: result.reason,
     protected_changes: result.protectedChanges,
     risk_level: risk.level
