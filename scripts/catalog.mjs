@@ -21,7 +21,8 @@ const catalog = await discoverCells();
 // beside siblings that are claimed, is a concrete and checkable gap — it is how
 // the missing entry for scripts/preflight.mjs was found. Surfacing it costs
 // nothing and turns the emptiest part of the on-ramp into a first mutation.
-const tracked = await trackedFiles();
+const coverage = await trackedFiles();
+const tracked = coverage.files;
 const unclaimed = tracked.filter((file) => !findCellForPath(catalog, file));
 const claimedDirectories = new Map();
 for (const file of tracked) {
@@ -53,9 +54,17 @@ const likelyGaps = unclaimed
 
 const output = {
   ...catalog,
-  unclaimed_paths: unclaimed,
+  path_coverage: coverage.available
+    ? { available: true, source: 'git ls-files', files_examined: tracked.length }
+    : {
+        available: false,
+        source: 'git ls-files',
+        reason: coverage.reason,
+        consequence: 'This run did not examine any paths, so it cannot say whether any are unclaimed. The two fields below are null rather than empty: not looking and finding nothing are different answers.'
+      },
+  unclaimed_paths: coverage.available ? unclaimed : null,
   unclaimed_paths_note: 'Not every path belongs to a cell. Top-level documentation and repository metadata are expected here.',
-  likely_catalog_gaps: likelyGaps
+  likely_catalog_gaps: coverage.available ? likelyGaps : null
 };
 
 if (catalog.errors.length > 0) {
@@ -68,10 +77,19 @@ if (catalog.errors.length > 0) {
 async function trackedFiles() {
   try {
     const { stdout } = await execFileAsync('git', ['ls-files'], { maxBuffer: 1024 * 1024 * 8 });
-    return stdout.split('\n').map((line) => line.trim()).filter(Boolean);
-  } catch {
-    // Outside a git checkout the catalog is still valid; it just cannot report
-    // coverage. Returning nothing is honest — an empty gap list, not a crash.
-    return [];
+    return { available: true, files: stdout.split('\n').map((line) => line.trim()).filter(Boolean) };
+  } catch (error) {
+    // Where the catalog cannot enumerate the repository — the admission gate's
+    // container has no git binary, and a tarball has no checkout — the cells
+    // are still valid and still worth reporting. What it must not do is return
+    // an empty list: a caller reading `likely_catalog_gaps: []` concludes the
+    // catalog is complete, and that is a claim this run has no basis to make.
+    return {
+      available: false,
+      files: [],
+      reason: error.code === 'ENOENT'
+        ? 'No git binary is available, so the tracked-file list could not be read.'
+        : `git ls-files failed (${error.code ?? 'unknown error'}), so the tracked-file list could not be read.`
+    };
   }
 }
