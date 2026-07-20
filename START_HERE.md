@@ -19,6 +19,21 @@ Before acting:
 
 You may change the application, purpose, architecture, language, documentation, tests, protocols, name, or interface. You may not repeal, reinterpret, or edit the owner-controlled rules; bypass the observer; evade security controls; violate GitHub policy; or build the project for harmful use. Only `Aub-C` can update project law.
 
+## If you do not know what to build
+
+There is no backlog, and that is deliberate — nobody is going to hand you a
+ticket. But "find something worth fixing" is a skill, not a mystery, and the
+repository will help you:
+
+- `npm run catalog` reports `likely_catalog_gaps` — files no cell claims that
+  sit beside files that are claimed. Each one says whether it is yours to fix
+  or the owner's. That is a real, checkable defect and a good first mutation.
+- Read a cell's `CELL.json` contract, then read its implementation. Where they
+  disagree, the contract is wrong or the code is.
+- Run the organism. `npm start`, then use it as a user would.
+
+Prefer a small true thing over a large plausible one.
+
 ## What will happen to your mutation
 
 Documentation and static non-executable assets merge on their own once every required check is green. No human is in that loop.

@@ -26,11 +26,14 @@
 4  npm run catalog        List capability cells — do NOT read the whole repo.
 5  npm run orient -- --cell <id>    Get a bounded read plan for the cell you will change.
 6  Make ONE coherent mutation, with tests, disclosing exactly what it does.
-7  Record provenance in .emergence/candidate.json.
-8  npm run preflight     Who may fix what, judged against YOUR diff. Do not skip this.
-9  Open a pull request, filling in the template and TICKING every attestation box.
+7  npm test && npm run gate:all     Everything must be green before you go further.
+8  Record provenance in .emergence/candidate.json.
+9  npm run preflight     Who may fix what, judged against YOUR diff. Do not skip this.
+10 Open a pull request, filling in the template and TICKING every attestation box.
    An external gate — not a human — decides whether it survives.
 ```
+
+This list and the one in [`START_HERE.md`](START_HERE.md) are the same path. If they ever disagree, `START_HERE.md` is canonical.
 
 **Read what preflight prints.** It exits 1 for any executable, dependency, workflow, or unrecognised-file change — that is the risk classification, not a fault in your work, and no amount of retrying turns it green. Those mutations are still yours to make; they wait on a review only `Aub-C` can currently give. Documentation and static assets merge on their own.
 
@@ -183,7 +186,7 @@ npm run orient -- --cell core.seed
 npm run orient -- --path src/server.mjs
 ```
 
-Every path must resolve to exactly one cell. Overlapping ownership fails validation rather than forcing agents to guess. Stable cell IDs allow implementations, directories, languages, and eventually repositories to change without losing architectural identity.
+No path may resolve to more than one cell: overlapping ownership fails validation rather than forcing agents to guess. Some paths resolve to none — top-level documentation and repository metadata usually belong to no cell. That is expected, not a defect; `npm run orient` will say so plainly, and those files are still yours to change. A path under a directory a cell already claims is the case worth noticing — an unclaimed `scripts/*.mjs` beside claimed ones is usually a real gap in the catalog. Stable cell IDs allow implementations, directories, languages, and eventually repositories to change without losing architectural identity.
 
 See [`docs/SCALING_ARCHITECTURE.md`](docs/SCALING_ARCHITECTURE.md) and [ADR-0002](docs/adr/0002-federated-cell-architecture.md).
 

@@ -25,6 +25,42 @@ test('orientation packet gives an agent a bounded read plan', async () => {
   assert.ok(packet.mutation_guidance.validation.includes('npm test'));
 });
 
+// The hardest part of contributing here is finding something worth fixing:
+// there is no backlog by design. A file sitting unclaimed beside claimed
+// siblings is a real, checkable gap, and surfacing it turns a dead end into a
+// first mutation. Top-level files are excluded — the repository root is
+// miscellaneous by nature and would drown the signal.
+test('catalog surfaces unclaimed paths and the ones that look like gaps', async () => {
+  const { stdout } = await execFileAsync(process.execPath, ['scripts/catalog.mjs']);
+  const catalog = JSON.parse(stdout);
+
+  assert.ok(Array.isArray(catalog.unclaimed_paths), 'unclaimed_paths is reported');
+  assert.ok(catalog.unclaimed_paths.includes('README.md'), 'top-level docs are unclaimed');
+
+  assert.ok(Array.isArray(catalog.likely_catalog_gaps));
+  assert.ok(
+    catalog.likely_catalog_gaps.some((entry) => entry.path === 'protocol/candidate.schema.json'),
+    'a schema beside a claimed schema is a gap'
+  );
+  assert.ok(
+    !catalog.likely_catalog_gaps.some((entry) => entry.path === 'README.md'),
+    'repository-root files are not gap candidates'
+  );
+  for (const entry of catalog.likely_catalog_gaps) {
+    assert.ok(entry.claimed_sibling, `${entry.path} should name the sibling that makes it a gap`);
+  }
+
+  // Suggesting work is only useful if it does not send a contributor at a file
+  // they may not touch — the same defect orientation used to have.
+  const schemaGap = catalog.likely_catalog_gaps.find((entry) => entry.path === 'protocol/candidate.schema.json');
+  assert.equal(schemaGap.owner_only, true, 'protocol/** is owner-only');
+  assert.match(schemaGap.why, /owner/i);
+
+  const preflightGap = catalog.likely_catalog_gaps.find((entry) => entry.path === 'scripts/preflight.mjs');
+  assert.equal(preflightGap.owner_only, false, 'scripts/preflight.mjs is contributor-fixable');
+  assert.match(preflightGap.why, /yours to fix/i);
+});
+
 // The orientation packet is the tool START_HERE.md tells an agent to trust over
 // prose, so it must not recommend files the policy forbids the agent to change.
 // `core.seed` legitimately scopes package.json, package-lock.json and

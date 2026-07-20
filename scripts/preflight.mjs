@@ -29,7 +29,15 @@ import { explainRejection } from '../control-plane/remediation.mjs';
 
 const policy = JSON.parse(await readFile(new URL('../control-plane/policy.json', import.meta.url), 'utf8'));
 
-const base = process.argv[2] ?? firstExistingRef(['origin/master', 'public/master', 'master']);
+// `upstream/master` comes first because the fork flow the README documents
+// (`gh repo fork --clone`) points `origin` at YOUR fork and `upstream` at the
+// canonical repository. Resolving `origin/master` there compares your work
+// against your own fork, which may be months stale, and preflight would print a
+// confident verdict derived from the wrong base. Silently classifying against
+// the wrong tree is the worst failure this tool has, so the resolved base is
+// always shown with its date — a stale base is then visible rather than
+// invisible.
+const base = process.argv[2] ?? firstExistingRef(['upstream/master', 'public/master', 'origin/master', 'master']);
 if (!base) {
   console.error('preflight: no base ref found. Pass one explicitly, e.g. npm run preflight -- main');
   process.exit(1);
@@ -53,7 +61,9 @@ const risk = classifyMutation(files, policy);
 // Everything below comes from the report, not from re-deriving it here.
 const report = explainRejection({ findings: [], risk, policy });
 
-console.log(`Preflight against ${base} — ${files.length} changed file(s)\n`);
+const baseStamp = gitLines(['log', '-1', '--format=%h %cs', base])[0] ?? 'unknown';
+console.log(`Preflight against ${base} (${baseStamp}) — ${files.length} changed file(s)`);
+console.log(`  If that base looks stale, fetch it or pass one explicitly: npm run preflight -- <ref>\n`);
 console.log(`  risk level        ${risk.level}`);
 console.log(`  merges on its own ${risk.autoMergeAllowed && !risk.codexRequired ? 'yes' : 'no'}`);
 console.log(`  needs review      ${report.needsReview ? 'yes — adversarial review required' : 'no'}\n`);

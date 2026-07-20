@@ -44,9 +44,7 @@
       "contract": "Non-critical pull requests may have squash auto-merge armed; GitHub branch rules and required checks remain the final merge lock."
     }
   ],
-  "depends_on": [
-    "platform.repository-intelligence"
-  ],
+  "depends_on": [],
   "capabilities": [
     "verify-owner-only-law",
     "verify-pr-attestations",
