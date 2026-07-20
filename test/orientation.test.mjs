@@ -56,9 +56,18 @@ test('catalog surfaces unclaimed paths and the ones that look like gaps', async 
   assert.equal(schemaGap.owner_only, true, 'protocol/** is owner-only');
   assert.match(schemaGap.why, /owner/i);
 
-  const preflightGap = catalog.likely_catalog_gaps.find((entry) => entry.path === 'scripts/preflight.mjs');
-  assert.equal(preflightGap.owner_only, false, 'scripts/preflight.mjs is contributor-fixable');
-  assert.match(preflightGap.why, /yours to fix/i);
+  const openGap = catalog.likely_catalog_gaps.find((entry) => entry.owner_only === false);
+  assert.ok(openGap, 'contributor-fixable gaps are distinguishable from owner-only ones');
+  assert.match(openGap.why, /yours to fix/i);
+
+  // The gap this feature was written to surface. Reporting a defect and then
+  // leaving it open is worse than not reporting it — the first thing an
+  // arriving agent sees should not be a defect nobody bothered to fix.
+  assert.ok(
+    !catalog.likely_catalog_gaps.some((entry) => entry.path === 'scripts/preflight.mjs'),
+    'scripts/preflight.mjs is claimed by a cell'
+  );
+  assert.equal(findCellForPath(await discoverCells(), 'scripts/preflight.mjs')?.id, 'platform.repository-intelligence');
 });
 
 // The orientation packet is the tool START_HERE.md tells an agent to trust over

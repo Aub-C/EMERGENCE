@@ -8,6 +8,7 @@
   "scope": [
     "scripts/catalog.mjs",
     "scripts/orient.mjs",
+    "scripts/preflight.mjs",
     "scripts/lib/cells.mjs",
     "scripts/CELL.json",
     "protocol/cell.schema.json",
@@ -17,7 +18,8 @@
   ],
   "entrypoints": [
     "scripts/catalog.mjs",
-    "scripts/orient.mjs"
+    "scripts/orient.mjs",
+    "scripts/preflight.mjs"
   ],
   "interfaces": [
     {
@@ -29,6 +31,11 @@
       "name": "agent-orientation",
       "kind": "cli-json",
       "contract": "npm run orient -- --cell <id> or --path <path> emits a bounded orientation packet."
+    },
+    {
+      "name": "mutation-preflight",
+      "kind": "cli-text",
+      "contract": "npm run preflight classifies the working diff against the canonical base and reports which paths the contributor may fix and which are the owner's. Exits 0 only when the mutation can merge unreviewed."
     }
   ],
   "depends_on": [
@@ -39,7 +46,8 @@
     "validate-cell-identities",
     "map-paths-to-cells",
     "compile-bounded-agent-context",
-    "report-cell-dependencies-and-dependents"
+    "report-cell-dependencies-and-dependents",
+    "classify-a-working-diff-before-submission"
   ],
   "read_first": [
     "docs/SCALING_ARCHITECTURE.md",
@@ -47,7 +55,8 @@
     "protocol/cell.schema.json",
     "scripts/lib/cells.mjs",
     "scripts/orient.mjs",
-    "test/orientation.test.mjs"
+    "test/orientation.test.mjs",
+    "scripts/preflight.mjs"
   ],
   "validation": [
     "npm run validate",
@@ -58,7 +67,7 @@
     "risk": "medium",
     "network": "No network access.",
     "filesystem": "Read-only repository traversal and metadata reads.",
-    "subprocesses": "Runs read-only git log to summarize recent target-cell history.",
+    "subprocesses": "Runs read-only git commands only: log, diff, ls-files, rev-parse. No writes to the repository and no network access.",
     "secrets": "None required or permitted."
   },
   "extension_points": [
