@@ -8,6 +8,14 @@
 // the one thing the gate never says out loud: who is permitted to fix each
 // blocker.
 //
+// The authority and risk-reason prose comes from explainRejection() — the
+// same function the gate uses to explain a rejected pull request — so this
+// tool cannot drift from the real verdict by restating its own copy of the
+// reasoning. Preflight is local, so it only ever has file paths, never
+// scanner findings; it always calls explainRejection() with findings: []
+// and reads what's left: which files are owner-only, and which merely raise
+// the risk level.
+//
 //   npm run preflight              compare against origin/master
 //   npm run preflight -- <ref>     compare against another ref
 //
@@ -17,6 +25,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { classifyMutation } from '../control-plane/risk-classifier.mjs';
+import { explainRejection } from '../control-plane/remediation.mjs';
 
 const policy = JSON.parse(await readFile(new URL('../control-plane/policy.json', import.meta.url), 'utf8'));
 
@@ -39,33 +48,29 @@ if (files.length === 0) {
 }
 
 const risk = classifyMutation(files, policy);
-const ownerOnly = new Set([...risk.ownerOnlyFiles, ...risk.redZoneFiles]);
+
+// findings: [] always — preflight is local and never sees scanner output.
+// Everything below comes from the report, not from re-deriving it here.
+const report = explainRejection({ findings: [], risk, policy });
 
 console.log(`Preflight against ${base} — ${files.length} changed file(s)\n`);
 console.log(`  risk level        ${risk.level}`);
 console.log(`  merges on its own ${risk.autoMergeAllowed && !risk.codexRequired ? 'yes' : 'no'}`);
-console.log(`  needs review      ${risk.codexRequired ? 'yes — adversarial review required' : 'no'}\n`);
+console.log(`  needs review      ${report.needsReview ? 'yes — adversarial review required' : 'no'}\n`);
 
-if (ownerOnly.size > 0) {
+if (report.owner.length > 0) {
   console.log('  You cannot change these. They are project law, owner-only by policy:');
-  for (const file of ownerOnly) console.log(`    ${file}`);
-  console.log('    Remove them from your mutation. Raise a rule suggestion for the owner instead.\n');
+  for (const item of report.owner) console.log(`    ${item.file}`);
+  console.log(`    ${report.owner[0].fix}\n`);
 }
 
-const needsReview = [
-  ...risk.executableFiles.map((f) => [f, 'executable code — runs in CI, so it earns adversarial review']),
-  ...risk.dependencyFiles.map((f) => [f, 'dependency manifest — supply-chain surface']),
-  ...risk.workflowFiles.map((f) => [f, 'workflow — can change what the gate itself does']),
-  ...risk.unknownFiles.map((f) => [f, 'unrecognised file type — the classifier cannot judge it as a static asset'])
-].filter(([file]) => !ownerOnly.has(file));
-
-if (needsReview.length > 0) {
+if (report.review.length > 0) {
   console.log('  These raise the risk level. You may change them, but they will wait for review:');
-  for (const [file, why] of needsReview) console.log(`    ${file}\n      ${why}`);
+  for (const item of report.review) console.log(`    ${item.file}\n      ${item.why}`);
   console.log('    Splitting them into a separate pull request lets the rest merge on its own.\n');
 }
 
-if (ownerOnly.size === 0 && needsReview.length === 0) {
+if (report.owner.length === 0 && report.review.length === 0) {
   console.log('  Nothing is blocking. This mutation is eligible to merge once every required check passes.\n');
 }
 
