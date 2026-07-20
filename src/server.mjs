@@ -16,7 +16,11 @@ const mime = new Map([
   ['.svg', 'image/svg+xml']
 ]);
 
-export function createAppServer() {
+// `dependencies` exists so a test can force the failure path; production calls
+// pass nothing and get the real state reader.
+export function createAppServer(dependencies = {}) {
+  const readState = dependencies.getState ?? getState;
+
   return createServer(async (request, response) => {
     try {
       const url = new URL(request.url ?? '/', 'http://localhost');
@@ -30,7 +34,7 @@ export function createAppServer() {
       }
 
       if (url.pathname === '/api/state') {
-        return sendJson(response, 200, await getState());
+        return sendJson(response, 200, await readState());
       }
 
       const requestedPath = url.pathname === '/' ? '/index.html' : url.pathname;
@@ -49,10 +53,12 @@ export function createAppServer() {
       });
       response.end(body);
     } catch (error) {
-      sendJson(response, 500, {
-        error: 'organism_failure',
-        message: error instanceof Error ? error.message : String(error)
-      });
+      // The detail stays on the server. A filesystem error message carries the
+      // absolute path it failed on, which tells a stranger where the organism
+      // lives and how it is laid out; the operator reading the log already
+      // knows both.
+      console.error('organism_failure', error);
+      sendJson(response, 500, { error: 'organism_failure' });
     }
   });
 }

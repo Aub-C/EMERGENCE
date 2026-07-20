@@ -26,6 +26,30 @@ test('server exposes health, state, and the organism surface', async (t) => {
   assert.match(await page.text(), /EMERGENCE/);
 });
 
+test('an internal failure is reported without leaking the server internals', async (t) => {
+  // The failure carries an absolute server path, the way a real fs error does.
+  const leak = '/home/someone/secret/.emergence/organism.json';
+  const server = createAppServer({
+    getState: async () => {
+      throw new Error(`ENOENT: no such file or directory, open '${leak}'`);
+    }
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => server.close());
+
+  const address = server.address();
+  assert.ok(address && typeof address !== 'string');
+
+  const response = await fetch(`http://127.0.0.1:${address.port}/api/state`);
+  assert.equal(response.status, 500);
+
+  const body = await response.text();
+  assert.equal(body.includes(leak), false, 'the response disclosed a server path');
+  assert.equal(body.includes('ENOENT'), false, 'the response disclosed the underlying error');
+  assert.deepEqual(JSON.parse(body), { error: 'organism_failure' });
+});
+
 test('server rejects traversal and unsupported methods', async (t) => {
   const server = createAppServer();
   server.listen(0, '127.0.0.1');
