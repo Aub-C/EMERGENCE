@@ -65,3 +65,33 @@ test('html remains unclassified because scripting is its purpose', () => {
   assert.equal(result.level, 'high');
   assert.equal(result.codexRequired, true);
 });
+
+// Project law must be recognised however the path is spelled. The classifier
+// matched patterns against the literal string, so `docs/../RULES.md` — the same
+// file as `RULES.md` — classified as ordinary documentation, while the static
+// scanner resolved it and saw project law. Two modules disagreeing about which
+// file is law is how a protected path stops being protected.
+test('a traversal-spelled path is still the file it resolves to', () => {
+  for (const spelling of ['docs/../RULES.md', './docs/../RULES.md', 'a/b/../../RULES.md']) {
+    const result = classifyMutation([spelling], policy);
+    assert.equal(result.level, 'critical', `${spelling} must be recognised as project law`);
+    assert.equal(result.autoMergeAllowed, false, `${spelling} must not be auto-mergeable`);
+    assert.ok(
+      result.ownerOnlyFiles.length + result.redZoneFiles.length > 0,
+      `${spelling} must appear in a protected list, got ${JSON.stringify(result)}`
+    );
+  }
+});
+
+test('a redundantly separated path is still the file it resolves to', () => {
+  const result = classifyMutation(['control-plane//policy.json'], policy);
+  assert.equal(result.level, 'critical');
+  assert.equal(result.ownerOnlyFiles.length, 1, 'owner-only matching must survive a doubled separator');
+});
+
+// A path that climbs above the repository root is not a file this project can
+// reason about, and must never quietly land in the low-risk bucket.
+test('a path escaping the repository root is never treated as a static asset', () => {
+  const result = classifyMutation(['../outside/secrets.md'], policy);
+  assert.notEqual(result.level, 'low', 'an out-of-tree path must not classify as low risk');
+});
