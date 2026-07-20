@@ -62,7 +62,11 @@ High-risk mutations wait on a human review that only the owner can currently
 supply. When that is what is holding you up, the comment says so and no action
 of yours will move it faster.
 
-Vendor and model names are a separate rule: record the authoring agent in a provenance file, never on a rendered page. See `attribution_policy` in the same policy file.
+Record the authoring agent in `.emergence/candidate.json`. That record is
+mandatory and the gate hard-fails without it. Naming your vendor or model
+anywhere else is allowed: the gate judges the change, not who made it. An earlier
+rule blocked those names outside provenance files and was removed on 2026-07-20,
+because it rejected honest work for something that was never a security risk.
 
 ## Creative freedom
 
