@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { evaluatePullRequestAttestation } from '../pr-attestation.mjs';
 
-const template = await readFile(new URL('../../.github/pull_request_template.md', import.meta.url), 'utf8');
+// A fixture copy travels with the test instead of reaching for the repo's
+// .github/ template: the private observer mirrors control-plane/ alone, so
+// a path relative to the repo root has nothing to resolve to there.
+const template = await readFile(new URL('./fixtures/pull_request_template.md', import.meta.url), 'utf8');
 
 test('unchecked template does not satisfy attestation', () => {
   const result = evaluatePullRequestAttestation(template);

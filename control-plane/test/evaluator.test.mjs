@@ -5,7 +5,13 @@ import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 
 const controlDir = fileURLToPath(new URL('..', import.meta.url));
-const candidateDir = fileURLToPath(new URL('../..', import.meta.url));
+
+// A fixture organism travels with the test rather than pointing at the repo
+// root. Repo root only happens to be a valid organism in EMERGENCE; the
+// private observer mirrors control-plane/ into gate/ with no organism above
+// it, so a `../..` candidate would ENOENT there for reasons that have
+// nothing to do with the evaluator itself.
+const candidateDir = fileURLToPath(new URL('./fixtures/seed-organism/', import.meta.url));
 
 test('observer accepts the seed organism', async () => {
   const child = spawn(process.execPath, ['evaluator.mjs', candidateDir], {

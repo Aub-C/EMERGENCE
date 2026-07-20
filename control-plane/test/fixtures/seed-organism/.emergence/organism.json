@@ -1,0 +1,15 @@
+{
+  "protocol_version": 1,
+  "identity": "seed",
+  "verify": ["node", "verify.mjs"],
+  "start": ["node", "server.mjs"],
+  "health": {
+    "path": "/healthz",
+    "expected_status": 200,
+    "startup_timeout_ms": 5000
+  },
+  "runtime": {
+    "port_env": "PORT",
+    "default_port": 3000
+  }
+}

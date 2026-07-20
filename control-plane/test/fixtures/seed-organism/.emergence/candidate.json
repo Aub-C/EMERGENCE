@@ -1,0 +1,22 @@
+{
+  "protocol_version": 2,
+  "agent": {
+    "name": "fixture",
+    "model": null,
+    "operator": null,
+    "github_actor": null,
+    "automation_id": null
+  },
+  "intent": "Provide the minimal organism the evaluator test exercises; not a real mutation.",
+  "mutation_type": "fixture",
+  "parent": null,
+  "claims": [
+    "This candidate exists only so evaluator.test.mjs has a self-contained subject."
+  ],
+  "attestations": {
+    "read_rules": true,
+    "github_policy_compliant": true,
+    "beneficial_use": true,
+    "accurate_disclosure": true
+  }
+}

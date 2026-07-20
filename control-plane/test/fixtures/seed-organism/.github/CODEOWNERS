@@ -1,0 +1,3 @@
+# Trimmed fixture copy: only presence is checked, not contents.
+/RULES.md @Aub-C
+/control-plane/ @Aub-C
