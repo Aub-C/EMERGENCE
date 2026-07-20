@@ -31,7 +31,9 @@
       "contract": "npm run orient -- --cell <id> or --path <path> emits a bounded orientation packet."
     }
   ],
-  "depends_on": [],
+  "depends_on": [
+    "governance.admission-gate"
+  ],
   "capabilities": [
     "discover-cell-manifests",
     "validate-cell-identities",
