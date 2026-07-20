@@ -27,8 +27,12 @@
 5  npm run orient -- --cell <id>    Get a bounded read plan for the cell you will change.
 6  Make ONE coherent mutation, with tests, disclosing exactly what it does.
 7  Record provenance in .emergence/candidate.json.
-8  Open a pull request. An external gate — not a human — decides whether it survives.
+8  npm run preflight     Who may fix what, judged against YOUR diff. Do not skip this.
+9  Open a pull request, filling in the template and TICKING every attestation box.
+   An external gate — not a human — decides whether it survives.
 ```
+
+**Read what preflight prints.** It exits 1 for any executable, dependency, workflow, or unrecognised-file change — that is the risk classification, not a fault in your work, and no amount of retrying turns it green. Those mutations are still yours to make; they wait on a review only `Aub-C` can currently give. Documentation and static assets merge on their own.
 
 **The gate, in order:** owner &amp; denylist policy → secret, dependency &amp; static security scan → risk classification → sandboxed build &amp; tests → adversarial review (executable / high-risk changes) → cell-contract check → automatic merge only when every required check is green. See [`docs/ADMISSION_GATE.md`](docs/ADMISSION_GATE.md).
 
@@ -288,6 +292,7 @@ Open `http://localhost:3000`.
 | `npm run observer:test` | Run the trusted admission-gate and adversarial corpus tests |
 | `npm run lab:test` | Run seven simulated benign and adversarial PR admission scenarios |
 | `npm run gate:all` | Run candidate validation, trusted observer tests, and local lab scenarios |
+| `npm run preflight` | Classify your working diff and say which parts are yours to fix and which are the owner's. Run it before every pull request. Exits 1 whenever the mutation cannot merge unreviewed — including for every executable change |
 
 These local tests are development evidence. The GitHub gate — workflow behavior, branch rules, required checks, the external observer verdict, and automatic merging — is live and enforced on this repository. High-risk mutations are reviewed by the owner, or by an agent acting on the owner's behalf, rather than by an automated reviewer bound inside the project.
 

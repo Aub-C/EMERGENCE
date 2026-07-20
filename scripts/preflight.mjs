@@ -58,10 +58,41 @@ console.log(`  risk level        ${risk.level}`);
 console.log(`  merges on its own ${risk.autoMergeAllowed && !risk.codexRequired ? 'yes' : 'no'}`);
 console.log(`  needs review      ${report.needsReview ? 'yes — adversarial review required' : 'no'}\n`);
 
+// Grouped by why the path is owner-only, not lumped together. Red-zone is
+// wider than project law — workflows, gate logic, contributor docs and the
+// pull-request template are owner-controlled without being law — and a
+// contributor told a PR template is "project law" discounts the rest of the
+// message. The old code also printed owner[0].fix for the whole list, which
+// was the wrong remedy for every item after the first once the list was mixed.
+const OWNER_GROUPS = [
+  { rule: 'owner-only-path', heading: '  You cannot change these. They are project law:' },
+  { rule: 'red-zone-path', heading: '  You cannot change these. They are owner-controlled governance — not law, but still owner-only:' }
+];
+
 if (report.owner.length > 0) {
-  console.log('  You cannot change these. They are project law, owner-only by policy:');
-  for (const item of report.owner) console.log(`    ${item.file}`);
-  console.log(`    ${report.owner[0].fix}\n`);
+  const grouped = new Set();
+
+  for (const { rule, heading } of OWNER_GROUPS) {
+    const items = report.owner.filter((item) => item.rule === rule);
+    if (items.length === 0) continue;
+    console.log(heading);
+    for (const item of items) {
+      console.log(`    ${item.file}`);
+      grouped.add(item);
+    }
+    console.log(`    ${items[0].fix}\n`);
+  }
+
+  // Anything the gate reported that is not a path-authority verdict keeps its
+  // own reason and remedy rather than inheriting someone else's.
+  const remaining = report.owner.filter((item) => !grouped.has(item));
+  if (remaining.length > 0) {
+    console.log('  These are the owner\'s to resolve:');
+    for (const item of remaining) {
+      console.log(`    ${item.file ?? 'this mutation'}\n      ${item.why}\n      ${item.fix}`);
+    }
+    console.log('');
+  }
 }
 
 if (report.review.length > 0) {

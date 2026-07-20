@@ -253,6 +253,37 @@ test('project law is explained once, not once per source that noticed it', () =>
   assert.equal(report.owner[0].file, 'RULES.md', 'the named file is more useful than the aggregate');
 });
 
+// Red-zone is wider than project law. `.github/pull_request_template.md` is
+// owner-controlled but is not law by any reading, and telling a contributor it
+// is costs the credibility of everything else in the comment. Both stay
+// owner-only — only the explanation differs.
+test('an owner-controlled file that is not law is not called project law', () => {
+  const report = explainRejection({
+    findings: [],
+    risk: riskWith({ level: 'critical', codexRequired: true, redZoneFiles: ['.github/pull_request_template.md'] }),
+    policy
+  });
+
+  assert.equal(report.owner.length, 1);
+  const [remedy] = report.owner;
+  assert.equal(remedy.file, '.github/pull_request_template.md');
+  assert.equal(remedy.rule, 'red-zone-path');
+  assert.doesNotMatch(remedy.why, /This file is project law/i, 'a PR template is not project law');
+  assert.match(remedy.why, /not project law/i, 'and it says so');
+  assert.match(remedy.why, /only the owner may change it/i, 'while staying owner-only');
+});
+
+test('actual project law is still called project law', () => {
+  const report = explainRejection({
+    findings: [],
+    risk: riskWith({ level: 'critical', codexRequired: true, ownerOnlyFiles: ['RULES.md'], redZoneFiles: ['RULES.md'] }),
+    policy
+  });
+
+  assert.equal(report.owner.length, 1, 'one file, one remedy');
+  assert.match(report.owner[0].why, /project law/i);
+});
+
 // A hostile contributor controls their file paths, and the rendered comment is
 // posted by a credentialed App. A backtick in a path closes the code span and
 // everything after it becomes live markdown — @mentions that page real people,

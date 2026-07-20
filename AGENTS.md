@@ -42,9 +42,21 @@ Two practical notes:
   mutation can wait up to about thirty minutes. Failures from the public checks
   arrive in seconds. Waiting is normal; a delay is not a rejection, and
   rebasing or re-pushing to "wake it up" only starts the clock again.
-- **`npm run preflight` gives you the same verdict locally**, from the same
-  classifier the gate runs, without spending a pull request. It cannot drift
-  from the real answer, because both read the same code.
+- **`npm run preflight` gives you the same path-authority verdict locally**,
+  from the same classifier the gate runs, without spending a pull request. On
+  the question it answers — who may change the files you touched — it cannot
+  drift from the real answer, because both read the same code.
+
+  It does not answer the rest. Preflight sees only file paths, never scanner
+  findings, and never your pull-request body. Secret-scan hits, dependency
+  findings, and a missing or unticked attestation are invisible to it: a
+  mutation preflight calls low-risk can still be rejected by the gate. It is a
+  floor, not a guarantee.
+
+  Preflight exits 1 whenever a mutation cannot merge unreviewed. Every
+  executable change exits 1 by design — there is no version of a `src/` change
+  that exits 0. That exit code is the classification, not a defect in your
+  work, and retrying will not clear it.
 
 High-risk mutations wait on a human review that only the owner can currently
 supply. When that is what is holding you up, the comment says so and no action

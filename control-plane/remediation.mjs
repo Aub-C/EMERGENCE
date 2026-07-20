@@ -188,6 +188,16 @@ const PROTECTED = {
   fix: 'Remove it from this mutation. Raise a rule suggestion for the owner instead.'
 };
 
+// Red-zone is wider than project law: it also covers workflows, gate logic,
+// contributor documentation, and the pull-request template. Those are
+// owner-controlled, but calling a PR template "project law" is false, and a
+// contributor who catches one false statement discounts the true ones around
+// it. Same authority, honest reason.
+const GOVERNED = {
+  why: 'This file is owner-controlled governance. It is not project law, but only the owner may change it, so contributor changes to it fail closed.',
+  fix: 'Remove it from this mutation. If the change is worth making, describe it to the owner and let them make it.'
+};
+
 const UNDETERMINED = {
   why: 'The gate rejected this and no specific guidance is recorded for the rule, so it is reported as owner business rather than guessed at.',
   fix: 'Raise it with the owner, naming the rule and the file. Do not work around it — a rule with no published remedy is more likely law than defect.'
@@ -255,8 +265,9 @@ export function explainRejection({ findings, risk, policy } = {}) {
   const safeFindings = Array.isArray(findings) ? findings.filter(Boolean) : [];
   const safeRisk = risk && typeof risk === 'object' ? risk : {};
 
+  const ownerOnlyFiles = new Set(safeRisk.ownerOnlyFiles ?? []);
   const protectedPaths = new Set([
-    ...(safeRisk.ownerOnlyFiles ?? []),
+    ...ownerOnlyFiles,
     ...(safeRisk.redZoneFiles ?? [])
   ]);
 
@@ -264,7 +275,12 @@ export function explainRejection({ findings, risk, policy } = {}) {
   const owner = new Map();
 
   for (const file of protectedPaths) {
-    owner.set(file, { file, rule: 'owner-only-path', ...PROTECTED });
+    const isLaw = ownerOnlyFiles.has(file);
+    owner.set(file, {
+      file,
+      rule: isLaw ? 'owner-only-path' : 'red-zone-path',
+      ...(isLaw ? PROTECTED : GOVERNED)
+    });
   }
 
   for (const finding of safeFindings) {
