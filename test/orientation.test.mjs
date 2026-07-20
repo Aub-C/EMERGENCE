@@ -51,33 +51,36 @@ test('catalog surfaces unclaimed paths and the ones that look like gaps', async 
 
   assert.ok(Array.isArray(catalog.likely_catalog_gaps));
   assert.ok(
-    catalog.likely_catalog_gaps.some((entry) => entry.path === 'protocol/candidate.schema.json'),
-    'a schema beside a claimed schema is a gap'
-  );
-  assert.ok(
     !catalog.likely_catalog_gaps.some((entry) => entry.path === 'README.md'),
     'repository-root files are not gap candidates'
   );
+
+  // Deliberately not pinned to any particular path, and deliberately not
+  // requiring that any gap exist. Closing a gap is the mutation this feature
+  // exists to recommend, so a test naming a gap and demanding it persist makes
+  // the recommended first contribution turn the suite red — and teaches the
+  // contributor that the right move is to delete the assertion. Round 5 caught
+  // exactly that: two of the three suggested gaps could not be closed without
+  // breaking this file. Assert the rules the output must obey, never the
+  // inventory of the moment. An empty gap list is a success, not a regression.
   for (const entry of catalog.likely_catalog_gaps) {
     assert.ok(entry.claimed_sibling, `${entry.path} should name the sibling that makes it a gap`);
-  }
+    assert.ok(entry.claim_manifest, `${entry.path} should name the manifest that would have to change`);
+    assert.ok(['owner', 'contributor'].includes(entry.closable_by), `${entry.path} says who can close it`);
 
-  // Suggesting work is only useful if it does not send a contributor at a file
-  // they may not touch — the same defect orientation used to have.
-  const schemaGap = catalog.likely_catalog_gaps.find((entry) => entry.path === 'protocol/candidate.schema.json');
-  assert.equal(schemaGap.owner_only, true, 'protocol/** is owner-only');
-  assert.match(schemaGap.why, /owner/i);
+    // Whoever is told to act has to be told what it will cost them.
+    if (entry.closable_by === 'owner') {
+      assert.match(entry.why, /owner-controlled/i, `${entry.path} must say the obvious route is closed`);
+    } else if (entry.owner_only) {
+      assert.match(entry.why, /owner-only/i, `${entry.path} must warn against including the file itself`);
+    } else {
+      assert.match(entry.why, /yours to fix/i, `${entry.path} is unencumbered and should say so`);
+    }
 
-  const openGap = catalog.likely_catalog_gaps.find((entry) => entry.closable_by === 'contributor');
-  assert.ok(openGap, 'at least one gap is actually closable by a contributor');
-  assert.match(openGap.why, /yours to fix/i);
-
-  // The defect round 4 found: a gap is only "yours to fix" if the manifest you
-  // would have to widen is itself changeable. Most of these sit beside a file
-  // claimed by the admission-gate cell, whose manifest is red-zone. Advising a
-  // newcomer to close one of those is advising a guaranteed critical hard-fail,
-  // through the mutation START_HERE.md recommends first.
-  for (const entry of catalog.likely_catalog_gaps) {
+    // The defect round 4 found: a gap is only closable by a contributor if the
+    // manifest they would widen is itself changeable. Most of these sit beside
+    // a file claimed by the admission-gate cell, whose manifest is red-zone.
+    // Offering one of those is offering a guaranteed critical hard-fail.
     if (entry.closable_by !== 'contributor') continue;
     assert.equal(
       catalog.cells.find((cell) => cell.id === entry.claimed_by_cell)?.metadata?.owner_only ?? false,
