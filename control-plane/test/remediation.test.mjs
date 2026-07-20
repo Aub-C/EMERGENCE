@@ -182,6 +182,49 @@ test('every rule the gate can emit has a published remedy', async () => {
   assert.deepEqual(missing, [], `these rules would be misreported as owner business: ${missing.join(', ')}`);
 });
 
+// The most common rejection there is. The gate knows exactly which sections and
+// attestations are missing; telling the contributor to go find them in the
+// Actions log is the wall this module exists to remove.
+test('a missing attestation names what is missing, rather than pointing at a log', () => {
+  const report = explainRejection({
+    findings: [{
+      level: 'hard-fail',
+      phase: 'policy',
+      rule: 'pull-request-attestation',
+      message: 'pull request disclosure or attestations incomplete',
+      missing_sections: ['## Mutation', '## Evidence'],
+      missing: ['I read and followed `RULES.md`.']
+    }],
+    risk: lowRisk,
+    policy
+  });
+  const markdown = renderRejection(report, { headSha: '3'.repeat(40) });
+  assert.match(markdown, /## Mutation/, 'the missing section must be named');
+  assert.match(markdown, /## Evidence/);
+  assert.match(markdown, /I read and followed/, 'the missing attestation must be quoted');
+  assert.doesNotMatch(markdown, /named in the gate output/, 'do not send the reader to a log');
+});
+
+// preflight reads changed paths. It never sees the pull request body, so it
+// cannot detect this class of failure and must not be offered as the check for it.
+test('preflight is not recommended for a failure it cannot detect', () => {
+  const bodyOnly = explainRejection({
+    findings: [{ level: 'hard-fail', phase: 'policy', rule: 'pull-request-attestation', message: 'incomplete', missing_sections: ['## Mutation'], missing: [] }],
+    risk: lowRisk,
+    policy
+  });
+  assert.doesNotMatch(renderRejection(bodyOnly, { headSha: '4'.repeat(40) }), /preflight/,
+    'preflight cannot see the pull request body');
+
+  const pathBased = explainRejection({
+    findings: [{ level: 'hard-fail', phase: 'static-security', file: 'a.q7', rule: 'unexpected-binary' }],
+    risk: lowRisk,
+    policy
+  });
+  assert.match(renderRejection(pathBased, { headSha: '4'.repeat(40) }), /preflight/,
+    'preflight does catch path-based blockers, so keep recommending it there');
+});
+
 // Found by rendering a real rejection: a finding with no file rendered as the
 // literal code span `mutation`, twice, which means nothing to a contributor.
 test('a blocker that names no file reads as prose, not as a filename', () => {

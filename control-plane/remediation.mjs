@@ -95,8 +95,18 @@ const CATALOG = {
     fix: 'Set `agent.github_actor` to the account opening the pull request, or leave it out.'
   },
   'pull-request-attestation': {
-    why: 'The pull request body is missing required disclosure sections.',
-    fix: 'Fill in the pull request template. The missing sections are named in the gate output.'
+    why: 'The pull request body is missing required disclosure sections or attestations.',
+    fix: 'Edit the pull request description to add exactly what is listed below. The headings and the attestation lines are matched literally, so copy them as written.',
+    // The gate already knows precisely what is absent. Naming it here is the
+    // difference between a remedy and a scavenger hunt through an Actions log.
+    // The attestation lines contain backticks of their own, so they are fenced
+    // by the same helper that fences file paths rather than by a bare tick.
+    detail: (finding) => [
+      ...(finding.missing_sections ?? []).map((section) => `missing section: ${code(section)}`),
+      ...(finding.missing ?? []).map((line) => `missing attestation: ${code(`- [x] ${line}`)}`)
+    ],
+    // preflight reads changed paths; it never sees the pull request body.
+    preflightDetects: false
   },
   'identity-denied': {
     why: 'An identity declared by this mutation is on the project denylist.',
@@ -218,6 +228,17 @@ function summarise(message) {
 // Some blockers are properties of the mutation as a whole — an incomplete
 // pull-request body has no file to point at. Rendering those as a code span
 // invented a filename that does not exist.
+// A catalogue entry may name what is missing, but it is reading a finding shaped
+// by another module. A remedy that throws would take the whole comment with it.
+function safeDetail(fn, finding) {
+  try {
+    const lines = fn(finding);
+    return Array.isArray(lines) ? lines.filter((line) => typeof line === 'string' && line.trim()).map(summarise) : [];
+  } catch {
+    return [];
+  }
+}
+
 function subject(file) {
   return file ? code(file) : 'this pull request';
 }
@@ -266,7 +287,15 @@ export function explainRejection({ findings, risk, policy } = {}) {
     if (entry) {
       const detail = summarise(finding.message ?? '');
       const why = detail && !entry.why.includes(detail) ? `${entry.why} (${detail})` : entry.why;
-      const remedy = { file, rule: finding.rule, why, fix: entry.fix };
+      const specifics = entry.detail ? safeDetail(entry.detail, finding) : [];
+      const remedy = {
+        file,
+        rule: finding.rule,
+        why,
+        fix: entry.fix,
+        detail: specifics,
+        preflightDetects: entry.preflightDetects !== false
+      };
       if (entry.authority === 'owner') owner.set(`${file ?? 'mutation'}:${finding.rule}:${detail}`, remedy);
       else contributor.push(remedy);
       continue;
@@ -335,7 +364,12 @@ export function renderRejection(report, { headSha, ownerNotified = false } = {})
   if (report.contributor.length > 0) {
     lines.push(`### You can fix ${report.contributor.length === 1 ? 'this' : 'these'}`, '');
     for (const item of report.contributor) {
-      lines.push(`**${subject(item.file)}** — ${item.rule}`, item.why, `→ ${item.fix}`, '');
+      lines.push(`**${subject(item.file)}** — ${item.rule}`, item.why, `→ ${item.fix}`);
+      if (item.detail?.length) {
+        lines.push('');
+        for (const line of item.detail) lines.push(`- ${line}`);
+      }
+      lines.push('');
     }
   }
 
@@ -373,7 +407,12 @@ export function renderRejection(report, { headSha, ownerNotified = false } = {})
     );
   }
 
-  lines.push('Run `npm run preflight` before pushing again — it reports the same verdict, from the same classifier, without spending a pull request.', '');
+  // preflight classifies changed paths. Recommending it against a blocker it
+  // structurally cannot see would send the contributor to a green check and
+  // leave them no wiser.
+  if (report.contributor.some((item) => item.preflightDetects !== false) || report.review.length > 0) {
+    lines.push('Run `npm run preflight` before pushing again — it reports the same verdict, from the same classifier, without spending a pull request.', '');
+  }
   lines.push('```json', JSON.stringify({
     verdict: 'blocked',
     riskLevel: report.riskLevel,
