@@ -103,6 +103,60 @@ const CATALOG = {
     fix: 'This is an enforcement decision, not a defect. Raise it with the owner.',
     authority: 'owner'
   },
+  // Behaviour rules. Every one of these is the contributor's to fix, including
+  // — especially including — the false positives. A document that merely
+  // mentions a download-and-run pipeline trips the same rule as a script that
+  // performs one, and the contributor is the only one who can tell the gate
+  // apart from the truth by rewording or moving it.
+  'reverse-shell-dev-tcp': {
+    why: 'The content matches a reverse-shell pattern.',
+    fix: 'Remove it. If this is documentation describing the pattern rather than performing it, put the example in a fenced code block in the pull request body instead of in a scanned file.'
+  },
+  'netcat-exec': {
+    why: 'The content invokes netcat with command execution.',
+    fix: 'Remove it. Describe the technique in prose if the intent is documentation.'
+  },
+  'shell-download-pipe': {
+    why: 'The content downloads a remote script and pipes it straight into a shell, which runs code nobody reviewed.',
+    fix: 'Fetch to a file, check it in or verify a digest, then run it. If this is documentation, reword it so it is not a runnable line.'
+  },
+  'powershell-download-exec': {
+    why: 'The content downloads and immediately executes a remote payload.',
+    fix: 'Remove it, or fetch and verify before running.'
+  },
+  'base64-decode-exec': {
+    why: 'The content decodes data and pipes it into a shell, which hides the behaviour from review.',
+    fix: 'Express the behaviour directly in source.'
+  },
+  'crypto-miner': {
+    why: 'The content matches a cryptocurrency miner.',
+    fix: 'Remove it. If the match is incidental — a word in prose — reword it.'
+  },
+  'credential-harvest': {
+    why: 'The content references a credential store such as an SSH key, cloud credentials file, or keychain.',
+    fix: 'Remove the reference. Nothing here needs to read a developer\'s credentials.'
+  },
+  'destructive-root-delete': {
+    why: 'The content matches a recursive delete rooted at `/`.',
+    fix: 'Remove it, or scope the path so it cannot resolve to the filesystem root.'
+  },
+  'fork-bomb': {
+    why: 'The content matches a fork bomb.',
+    fix: 'Remove it.'
+  },
+  'workflow-write-all': {
+    why: 'A workflow requests blanket write permissions, which hands every token the maximum scope.',
+    fix: 'Name only the permissions the job needs. Note that workflow files are owner-only here in any case.'
+  },
+  'workflow-privileged-container': {
+    why: 'A workflow requests a privileged container, which escapes the usual isolation.',
+    fix: 'Drop the privileged flag. Note that workflow files are owner-only here in any case.'
+  },
+  'workflow-pull-request-target-head': {
+    why: 'A workflow uses `pull_request_target` while checking out the pull request head, which runs untrusted code with a privileged token — the standard privilege-escalation footgun.',
+    fix: 'Use `pull_request`, or do not check out the head. Note that workflow files are owner-only here in any case.'
+  },
+
   'owner-only-path': {
     why: 'This mutation changes project law, which only the owner may change.',
     fix: 'Remove those files from this mutation. Raise a rule suggestion for the owner instead.',
@@ -114,6 +168,10 @@ const CATALOG = {
     authority: 'owner'
   }
 };
+
+// Exported so a test can hold the catalogue against the rules the gate can
+// actually emit. Two lists that must agree will not stay agreed on their own.
+export const KNOWN_RULES = Object.freeze(Object.keys(CATALOG));
 
 const PROTECTED = {
   why: 'This file is project law. Contributor changes to it fail closed by design.',

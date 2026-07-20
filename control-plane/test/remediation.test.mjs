@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { explainRejection, renderRejection } from '../remediation.mjs';
+import { explainRejection, renderRejection, KNOWN_RULES } from '../remediation.mjs';
 
 const policy = JSON.parse(await readFile(new URL('../policy.json', import.meta.url), 'utf8'));
 
@@ -162,6 +162,24 @@ test('malformed input produces a usable report instead of throwing', () => {
     assert.ok(Array.isArray(report.contributor));
     assert.match(renderRejection(report), /\S/);
   }
+});
+
+// The catalogue is a second list of the gate's rules, and a second list drifts.
+// Every drift is silent and lands the same way: a contributor is told to ask
+// the owner about something they could have fixed themselves. This test is the
+// only thing that makes adding a rule without a remedy fail loudly.
+test('every rule the gate can emit has a published remedy', async () => {
+  const sources = await Promise.all(['../security-scan.mjs', '../static-gate.mjs'].map(
+    (file) => readFile(new URL(file, import.meta.url), 'utf8')
+  ));
+  const emitted = new Set();
+  for (const source of sources) {
+    for (const match of source.matchAll(/\b(?:id|rule):\s*'([a-z0-9-]+)'/g)) emitted.add(match[1]);
+  }
+  assert.ok(emitted.size > 15, `expected to find the gate's rules, found ${emitted.size}`);
+
+  const missing = [...emitted].filter((rule) => !KNOWN_RULES.includes(rule)).sort();
+  assert.deepEqual(missing, [], `these rules would be misreported as owner business: ${missing.join(', ')}`);
 });
 
 // A hostile contributor controls their file paths, and the rendered comment is
