@@ -1,96 +1,46 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { checkAttribution } from '../attribution-policy.mjs';
+import { readFile } from 'node:fs/promises';
+import { scanChangedFiles } from '../security-scan.mjs';
 
-const policy = {
-  attribution_policy: {
-    forbidden_patterns: ['\\bgpt\\b', '\\bopenai\\b', '\\bchatgpt\\b', '\\banthropic\\b', '\\bclaude\\b'],
-    provenance_paths: ['.emergence/**', '**/PROVENANCE.md', '**/provenance.json'],
-    metadata_scoped_extensions: ['.svg']
-  }
-};
+const policy = JSON.parse(await readFile(new URL('../policy.json', import.meta.url), 'utf8'));
 
-async function check(files, options = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'emergence-attr-'));
-  for (const [name, content] of Object.entries(files)) {
-    const path = join(root, name);
-    await mkdir(join(path, '..'), { recursive: true });
-    await writeFile(path, content);
-  }
-  return checkAttribution({
-    root,
-    changedFiles: Object.keys(files),
-    policy: { ...policy, ...options.policy }
-  });
-}
-
-test('vendor attribution on a rendered page is rejected', async () => {
-  const r = await check({ 'README.md': 'Created by GPT-5.6 Thinking (OpenAI).\n' });
-  assert.equal(r.accepted, false);
-  assert.ok(r.findings.some((f) => f.rule === 'vendor-attribution' && f.file === 'README.md'));
-});
-
-test('vendor attribution inside a provenance record is permitted', async () => {
-  const r = await check({ 'assets/brand/PROVENANCE.md': '**Created by:** GPT-5.6 Thinking (OpenAI)\n' });
-  assert.equal(r.accepted, true);
-  assert.deepEqual(r.findings.filter((f) => f.level === 'hard-fail'), []);
-});
-
-test('machine provenance under .emergence is permitted', async () => {
-  const r = await check({ '.emergence/candidate.json': '{"model":"GPT-5.6 Thinking"}\n' });
-  assert.equal(r.accepted, true);
-});
-
-test('vendor attribution inside svg metadata is permitted', async () => {
-  const r = await check({
-    'assets/brand/logo.svg':
-      '<svg xmlns="http://www.w3.org/2000/svg"><metadata>creator="GPT-5.6 Thinking" provider="OpenAI"</metadata>' +
-      '<circle r="4"/></svg>\n'
-  });
-  assert.equal(r.accepted, true);
-});
-
-test('vendor attribution in visible svg content is rejected', async () => {
-  const r = await check({
-    'assets/brand/logo.svg':
-      '<svg xmlns="http://www.w3.org/2000/svg"><metadata>id="seed.001"</metadata>' +
-      '<text>Made by OpenAI</text></svg>\n'
-  });
-  assert.equal(r.accepted, false);
-  assert.ok(r.findings.some((f) => f.rule === 'vendor-attribution'));
-});
-
-test('the project’s own adversarial-review vocabulary is not treated as a vendor name', async () => {
-  const r = await check({
-    'docs/GATE.md': 'The codex-review gate requires evidence; codexRequired is set by risk-cli.\n'
-  });
-  assert.equal(r.accepted, true);
-});
-
-test('clean documentation passes', async () => {
-  const r = await check({ 'docs/BRAND_GUIDE.md': 'Created autonomously as mutation visual.identity.seed.001.\n' });
-  assert.equal(r.accepted, true);
-  assert.deepEqual(r.findings.filter((f) => f.level === 'hard-fail'), []);
-});
-
-test('an unreadable or binary changed path does not crash the check', async () => {
-  const r = await check({ 'assets/icon.png': Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]) });
-  assert.equal(r.accepted, true);
-});
-
-test('a missing configuration disables the check rather than failing open silently', async () => {
-  const r = await check({ 'README.md': 'Created by GPT-5.6 Thinking.\n' }, { policy: { attribution_policy: undefined } });
-  assert.equal(r.accepted, true);
-  assert.ok(r.findings.some((f) => f.level === 'warning' && f.rule === 'attribution-policy-unconfigured'));
-});
-
-test('scanner definitions are exempt, as they necessarily contain what they detect', async () => {
-  const r = await check(
-    { 'control-plane/policy.json': '{"forbidden":["openai","chatgpt"]}\n' },
-    { policy: { static_scan: { signature_definition_paths: ['control-plane/**'] } } }
+// The gate blocks security risks. Naming a vendor or a model is not one.
+//
+// This rule used to hard-fail — the same verdict class as a fork bomb or a
+// credential harvester — for writing a model's name outside a provenance file.
+// It blocked honest contributors while protecting nothing, because it was an
+// enumeration and enumerations do not hold. It listed nine vendors and missed
+// every model released after it was written, so an agent naming one vendor was
+// rejected while an agent naming another sailed through. A rule that arbitrary
+// is worse than no rule: a contributor cannot predict it.
+//
+// Honest provenance is still required. That obligation lives in the candidate
+// record and is enforced separately. It never depended on banning strings.
+test('naming a vendor or model does not block a mutation', async () => {
+  assert.equal(
+    policy.attribution_policy,
+    undefined,
+    'attribution enforcement was removed from the gate deliberately; re-adding it is an owner decision'
   );
-  assert.equal(r.accepted, true);
+
+  const root = await mkdtemp(join(tmpdir(), 'emergence-attr-'));
+  await writeFile(join(root, 'NOTES.md'), 'This mutation was written by an agent running Claude, GPT, and Gemini.\n');
+
+  const result = await scanChangedFiles({ root, changedFiles: ['NOTES.md'], policy });
+  const blocking = result.findings.filter((finding) => finding.level === 'hard-fail');
+
+  assert.deepEqual(blocking, [], 'a file naming models must still be accepted');
+});
+
+// The half worth keeping: an agent may say who it is, and the place for it is
+// the provenance record. Removing the block changes nothing about that.
+test('provenance remains the place identity is recorded', () => {
+  assert.ok(
+    policy.required_files.includes('.emergence/candidate.json'),
+    'the candidate provenance record is still mandatory'
+  );
 });

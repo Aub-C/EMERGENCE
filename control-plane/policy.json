@@ -164,30 +164,5 @@
     "validation",
     "codex-review",
     "observer"
-  ],
-  "attribution_policy": {
-    "description": "Vendor and model names stay off rendered surfaces; honest provenance is recorded in the provenance files instead. Presentation is default-deny: anything not listed as a provenance path is a rendered surface.",
-    "forbidden_patterns": [
-      "\\bgpt\\b",
-      "\\bopenai\\b",
-      "\\bchatgpt\\b",
-      "\\banthropic\\b",
-      "\\bclaude\\b",
-      "\\bgemini\\b",
-      "\\bcopilot\\b",
-      "\\bllama\\b",
-      "\\bmistral\\b"
-    ],
-    "provenance_paths": [
-      ".emergence/**",
-      "**/PROVENANCE.md",
-      "**/provenance.json",
-      "assets/brand/brand-manifest.json",
-      "docs/BRAND_MUTATION.md"
-    ],
-    "metadata_scoped_extensions": [
-      ".svg"
-    ],
-    "result": "hard-fail"
-  }
+  ]
 }

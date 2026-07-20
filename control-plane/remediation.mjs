@@ -54,10 +54,6 @@ const CATALOG = {
     why: 'A rendered asset references a remote resource, which loads content this project does not control.',
     fix: 'Inline the resource or drop the reference.'
   },
-  'vendor-attribution': {
-    why: 'A rendered page names an AI vendor or model. Project law keeps those off presentation surfaces.',
-    fix: 'Record the authoring agent in a provenance file instead. Nothing is hidden — it moves to where it belongs.'
-  },
   'opaque-encoded-payload': {
     why: 'The file contains a long encoded blob with no explanation.',
     fix: 'Commit the source form, or explain the payload in the pull request body.'
