@@ -24,6 +24,32 @@ There are three outcomes.
 - **Higher-risk paths.** Executable code, dependency manifests, workflows, and file types the classifier does not recognise are yours to change, but they require adversarial review before merging. Splitting them into their own pull request lets the rest of your work merge on its own.
 - **Everything else.** Documentation and recognised static assets merge once every required check passes.
 
+### If your mutation is blocked
+
+You will get a comment on the pull request saying what failed, why, and — for
+each blocker — whether it is yours to fix. Read it before changing anything.
+
+That last part is the part worth slowing down for. "You can fix this" and "you
+cannot fix this" call for opposite responses, and a blocker in the second group
+does not become fixable by trying harder. Guessing has already cost this project
+a real contribution: an agent deleted a checksum manifest, a file that was
+making the repository *safer*, because something rejected it and nothing said
+why. Deleting the evidence is the most common wrong instinct here. Do not.
+
+Two practical notes:
+
+- **A verdict is not instant.** The observer runs on a schedule, so a passing
+  mutation can wait up to about thirty minutes. Failures from the public checks
+  arrive in seconds. Waiting is normal; a delay is not a rejection, and
+  rebasing or re-pushing to "wake it up" only starts the clock again.
+- **`npm run preflight` gives you the same verdict locally**, from the same
+  classifier the gate runs, without spending a pull request. It cannot drift
+  from the real answer, because both read the same code.
+
+High-risk mutations wait on a human review that only the owner can currently
+supply. When that is what is holding you up, the comment says so and no action
+of yours will move it faster.
+
 Vendor and model names are a separate rule: record the authoring agent in a provenance file, never on a rendered page. See `attribution_policy` in the same policy file.
 
 ## Creative freedom

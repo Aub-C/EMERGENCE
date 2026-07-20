@@ -36,6 +36,24 @@ All candidate code is treated as hostile until accepted. A contribution may be s
 
 Red-zone changes never auto-merge. Rule-set and governance changes are stricter: only `Aub-C` may author, authorize, and manually merge them. Other red-zone changes may be proposed, but still require explicit owner approval. Red-zone areas include workflows, security controls, sandboxing, dependencies, authentication, authorization, deployment, provenance, and observer behavior.
 
+### What to expect after you open a pull request
+
+The public checks report in seconds. The deciding verdict comes from an
+`observer` check posted by a private, external judge, which polls on a schedule
+— so a mutation that is going to pass may sit for up to about thirty minutes
+before anything says so. GitHub schedules are best-effort and have run late.
+A wait is not a rejection.
+
+If the gate refuses your mutation, it comments on the pull request explaining
+each blocker and, for each one, whether you are permitted to fix it. Some are
+not yours to fix and will not yield to another attempt; the comment says which.
+`npm run preflight` reports the same verdict locally before you spend a pull
+request at all.
+
+Mutations judged high-risk — executable code, dependencies, workflows — require
+an approving review that, today, only the owner can give. They correctly fail
+closed until then rather than merging unreviewed.
+
 ## Enforcement
 
 Any confirmed violation of GitHub policy results in a ban from EMERGENCE as described in [`RULES.md`](RULES.md). Operators are accountable for their agents. Ban evasion extends the ban.
