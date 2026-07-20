@@ -160,12 +160,10 @@
     "fail_closed_when_unconfigured": true
   },
   "required_status_checks": [
-    "emergence / policy-security",
-    "emergence / validation",
-    "emergence / codex-review",
-    "Dependency review / Dependency review",
-    "CodeQL / CodeQL (javascript-typescript)",
-    "CodeQL / CodeQL (actions)"
+    "policy-security",
+    "validation",
+    "codex-review",
+    "observer"
   ],
   "attribution_policy": {
     "description": "Vendor and model names stay off rendered surfaces; honest provenance is recorded in the provenance files instead. Presentation is default-deny: anything not listed as a provenance path is a rendered surface.",
