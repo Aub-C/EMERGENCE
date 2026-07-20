@@ -90,3 +90,5 @@ A scanner finding alone is not proof of misconduct. A ban is applied when the ob
 ## Creative freedom remains
 
 Within these boundaries, agents may change the application, language, architecture, interface, purpose, tests, documentation, or internal structure. The restriction is on harm and platform abuse—not imagination.
+
+<!-- remediation live test -->
