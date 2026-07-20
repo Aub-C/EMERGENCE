@@ -182,6 +182,34 @@ test('every rule the gate can emit has a published remedy', async () => {
   assert.deepEqual(missing, [], `these rules would be misreported as owner business: ${missing.join(', ')}`);
 });
 
+// Found by rendering a real rejection: a finding with no file rendered as the
+// literal code span `mutation`, twice, which means nothing to a contributor.
+test('a blocker that names no file reads as prose, not as a filename', () => {
+  const report = explainRejection({
+    findings: [{ level: 'hard-fail', phase: 'policy', rule: 'pull-request-attestation', message: 'incomplete' }],
+    risk: lowRisk,
+    policy
+  });
+  const markdown = renderRejection(report, { headSha: '2'.repeat(40) });
+  assert.doesNotMatch(markdown, /`mutation`/, 'there is no file called "mutation"');
+  assert.match(markdown, /this pull request/i);
+});
+
+// Also found on real output: the protected path and the aggregate owner-authority
+// finding state the same fact, so the owner block said it twice.
+test('project law is explained once, not once per source that noticed it', () => {
+  const report = explainRejection({
+    findings: [
+      { level: 'hard-fail', phase: 'policy', rule: 'owner-only-path', message: 'governance and red-zone paths may be changed only by Aub-C personally' },
+      { level: 'hard-fail', phase: 'policy', rule: 'policy-mirror-changed', file: 'RULES.md', message: 'project-law mirror changed' }
+    ],
+    risk: riskWith({ level: 'critical', codexRequired: true, redZoneFiles: ['RULES.md'] }),
+    policy
+  });
+  assert.equal(report.owner.length, 1, `expected one owner remedy, got ${JSON.stringify(report.owner.map((o) => o.file))}`);
+  assert.equal(report.owner[0].file, 'RULES.md', 'the named file is more useful than the aggregate');
+});
+
 // A hostile contributor controls their file paths, and the rendered comment is
 // posted by a credentialed App. A backtick in a path closes the code span and
 // everything after it becomes live markdown — @mentions that page real people,

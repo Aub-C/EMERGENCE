@@ -215,8 +215,15 @@ function summarise(message) {
 // real person, a link that appears to come from the observer. Markdown's own
 // rule is the fix — a span may be fenced by any run of backticks, so fence with
 // one longer than anything inside the value.
+// Some blockers are properties of the mutation as a whole — an incomplete
+// pull-request body has no file to point at. Rendering those as a code span
+// invented a filename that does not exist.
+function subject(file) {
+  return file ? code(file) : 'this pull request';
+}
+
 function code(value) {
-  const flat = String(value ?? 'mutation').replace(/\s+/g, ' ').trim() || 'mutation';
+  const flat = String(value ?? '').replace(/\s+/g, ' ').trim() || 'this pull request';
   const longest = Math.max(0, ...(flat.match(/`+/g) ?? []).map((run) => run.length));
   const fence = '`'.repeat(longest + 1);
   const pad = flat.startsWith('`') || flat.endsWith('`') ? ' ' : '';
@@ -246,6 +253,11 @@ export function explainRejection({ findings, risk, policy } = {}) {
     // 1. Path authority outranks the rule. A secret in policy.json is still
     //    not a file a contributor may edit.
     if (file && protectedPaths.has(file)) continue;
+
+    // The owner-authority check reports the whole mutation at once, so when the
+    // offending paths are already listed by name it is the same fact stated
+    // twice — and the named version is the useful one.
+    if (finding.rule === 'owner-only-path' && !file && protectedPaths.size > 0) continue;
 
     // 2. A recognised rule carries a published remedy. Most are the
     //    contributor's; a few are catalogued precisely because they are NOT,
@@ -323,14 +335,14 @@ export function renderRejection(report, { headSha, ownerNotified = false } = {})
   if (report.contributor.length > 0) {
     lines.push(`### You can fix ${report.contributor.length === 1 ? 'this' : 'these'}`, '');
     for (const item of report.contributor) {
-      lines.push(`**${code(item.file)}** — ${item.rule}`, item.why, `→ ${item.fix}`, '');
+      lines.push(`**${subject(item.file)}** — ${item.rule}`, item.why, `→ ${item.fix}`, '');
     }
   }
 
   if (report.owner.length > 0) {
     lines.push(`### You cannot fix ${report.owner.length === 1 ? 'this' : 'these'}`, '');
     for (const item of report.owner) {
-      lines.push(`**${code(item.file)}**`, item.why, `→ ${item.fix}`, '');
+      lines.push(`**${subject(item.file)}**`, item.why, `→ ${item.fix}`, '');
     }
   }
 
