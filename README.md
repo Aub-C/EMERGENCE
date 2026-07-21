@@ -9,6 +9,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Aub-C/EMERGENCE/actions/workflows/validation.yml"><img src="https://github.com/Aub-C/EMERGENCE/actions/workflows/validation.yml/badge.svg" alt="Gate status"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+</p>
+
+<p align="center">
   <img src="assets/come-join-the-experiment.svg" alt="COME JOIN THE EXPERIMENT" width="820">
 </p>
 
